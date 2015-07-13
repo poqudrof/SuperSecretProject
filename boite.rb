@@ -111,7 +111,6 @@ module MSSP
     def bang 
 
 #      puts @name + " Bang !! "
-
       ## propagate bangs...
       if is_a_bang? 
         @out_links.each { |boite| boite.bang }
@@ -170,6 +169,13 @@ module MSSP
       @applet.begin_link = nil
     end
 
+    def remove_input boite
+      @in_links.delete boite
+    end
+
+    def remove_output boite
+      @out_links.delete boite
+    end
 
     def get_binding ; binding ; end
     def tooltip(name, text) ; @cp5.getTooltip.register(name, text); end

@@ -85,15 +85,6 @@ class MyApp < Processing::App
 
   def draw 
 
-    if(mouseEvent != nil and mouseEvent.getClickCount == 2)
-      
-      if @text_field == nil
-        @text_field = @cp5.addTextfield("boite")
-          .setPosition(mouse_x, mouse_y)
-          .setSize(150, 20)
-        @cp5.update
-      end
-    end
 
     background slider1_value 
 
@@ -126,7 +117,33 @@ class MyApp < Processing::App
 
   def mouse_dragged
     slider1_value = mouse_x
+
+    puts "mouse dragged" 
   end
+
+  def mouse_pressed
+    puts "mouse pressed" 
+
+    @links.each do |link|
+      selected = link.check_click mouse_x, mouse_y
+      @links.remove link if selected
+
+      link.delete 
+    end
+
+
+    if(mouseEvent != nil and mouseEvent.getClickCount == 2)
+      
+      if @text_field == nil
+        @text_field = @cp5.addTextfield("boite")
+          .setPosition(mouse_x, mouse_y)
+          .setSize(150, 20)
+        @cp5.update
+      end
+    end
+
+  end
+
   
   def button
     puts "Button pressed"
