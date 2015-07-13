@@ -65,6 +65,10 @@ class MyApp < Processing::App
 
   end
 
+  def remove boite
+    @boites.delete boite
+  end
+
 
   def boite name
     puts "In function boite " + name +  " " + boite_value

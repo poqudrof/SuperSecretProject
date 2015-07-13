@@ -34,6 +34,10 @@ module MSSP
         .setLabel("edit")
         .setSize(30, 10)
 
+      @delete_button = @cp5.addButton("delete")
+        .setLabel("del")
+        .setSize(13, 10)
+
       if can_create? 
         @creation_bang = @cp5.addButton("create")
           .setLabel("create")
@@ -65,6 +69,7 @@ module MSSP
     def update_graphics
       @location_handle.setPosition(@location.x + 50, @location.y)
       @edit_button.setPosition(@location.x + 60, @location.y + 10)
+      @delete_button.setPosition(@location.x + 60, @location.y + 20)
 
 
       if can_create? and @creation_bang != nil
@@ -181,6 +186,7 @@ module MSSP
     def output_created_values; has_output? ? output : "No output ";  end
 
     def update 
+
       if @name == "always"
         bang
       end
@@ -221,6 +227,25 @@ module MSSP
       %x( scite #{@file} )
       load_code
     end
+
+    def delete
+      @to_remove = true
+
+      @cp5.setAutoDraw false
+
+      @applet.remove self
+
+      @cp5.remove "edit"
+      @cp5.remove "delete"
+      
+      puts @cp5.getAll
+
+      @cp5.getAll.each do |controller| 
+        @cp5.remove controller
+      end
+
+    end
+
     
     def create_data (value, name)
       data = {}

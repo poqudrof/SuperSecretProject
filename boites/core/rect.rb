@@ -4,7 +4,7 @@ def input
 end
 
 def apply data 
-  data["graphics"].rect 100, 200, 15, 15
+  data["graphics"].rect 100, 200, 150, 150
   data
 end
 
