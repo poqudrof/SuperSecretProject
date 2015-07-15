@@ -5,8 +5,8 @@ module MSSP
     attr_reader :in_boite, :out_boite
 
     def initialize(begin_element, end_element)
-      @in_boite = begin_element
-      @out_boite = end_element
+      @out_boite = begin_element
+      @in_boite = end_element
     end
 
     def draw(graphics) 
@@ -22,12 +22,19 @@ module MSSP
       a = @in_boite.location 
       c = @out_boite.location 
 
-      return a.dist(c) + b.dist(c) == a.dist(b)
+      dist = a.dist(b) + b.dist(c) 
+      dist_a_c = a.dist(c)
+
+      return (dist <= dist_a_c + 2 and dist >= dist_a_c - 2)
     end
 
     def delete
-      @out_boite.remove_input @in_boite
-      @in_boite.remove_output @out_boite
+      puts " deleting " + self.to_s
+      # @out_boite.remove_input @in_boite
+      # @in_boite.remove_output @out_boite
+
+      @in_boite.remove_input @out_boite
+      @out_boite.remove_output @in_boite
     end
 
   end

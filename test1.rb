@@ -71,6 +71,11 @@ class MyApp < Processing::App
 
 
   def boite name
+
+    if name == "" 
+      remove_boite
+      return
+    end
     puts "In function boite " + name +  " " + boite_value
 
     ## TODO: try... catch
@@ -78,9 +83,13 @@ class MyApp < Processing::App
     boite.location.x = @text_field.position.x
     boite.location.y = @text_field.position.y
     @boites << boite
+    remove_boite
+  end
 
+  def remove_boite
     @cp5.remove "boite"
     @text_field = nil
+
   end
 
   def draw 
@@ -125,11 +134,14 @@ class MyApp < Processing::App
     puts "mouse pressed" 
 
     @links.each do |link|
-      selected = link.check_click mouse_x, mouse_y
-      @links.remove link if selected
+     selected = link.check_click mouse_x, mouse_y
 
-      link.delete 
+      if selected
+        @links.delete link
+        link.delete 
+      end
     end
+    puts @links.size
 
 
     if(mouseEvent != nil and mouseEvent.getClickCount == 2)
