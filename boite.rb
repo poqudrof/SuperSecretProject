@@ -26,7 +26,7 @@ module MSSP
       @location = Vec2D.new 100, 100
 
       @cp5 = ControlP5.new @applet, self
-      @location_handle = @cp5.addButton("translation")
+      @location_handle = @cp5.addButton("translation_at_mouse")
         .setLabel("")
         .setSize(10, 20)
 
@@ -46,14 +46,25 @@ module MSSP
       end
 
       if has_input?
-        @input_bang = @cp5.addButton("input_bang")
-          .setLabel("")
-          .setSize(10, 10)
-        tooltip "input_bang", input
+        @inputs = {}
+        @input_bangs = []
+
+        input_list.each do |input|
+          name = "input_bang_" + input
+
+          create_input_bang name, input
+          @inputs[input] = nil
+
+          ## TODO: input placement
+          @input_bangs << @cp5.addButton(name)
+            .setLabel("")
+            .setSize(10, 10)
+          tooltip name, input
+        end
       end
 
       @cp5.getTooltip.setDelay(200);
-      tooltip "translation", "Move"
+      tooltip "translation_at_mouse", "Move"
 
 
       @cp5.update
@@ -62,7 +73,7 @@ module MSSP
     end
 
 
-    def translation
+    def translation_at_mouse
       @location.x, @location.y = @applet.mouseX, @applet.mouseY
     end
 
@@ -76,9 +87,10 @@ module MSSP
         @creation_bang.setPosition(@location.x + 60, @location.y )
       end
 
-      if has_input? and @input_bang != nil
-        @input_bang.setPosition(@location.x + 0, @location.y )
-        tooltip "input_bang", input
+      if has_input? and @input_bangs != nil
+        @input_bangs.each_with_index do |bang, index|
+          bang.setPosition(@location.x + (index * 15), @location.y )
+        end
       end
       
 
@@ -157,17 +169,32 @@ module MSSP
       @applet.begin_link = self
     end
 
-    def input_bang
 
-      return if @applet.begin_link == nil
+    def create_input_bang name, input_name
 
-      link = Link.new @applet.begin_link, self
-      @in_links << @applet.begin_link
-      @applet.begin_link.out_links << self
+      create_method(name) do 
 
-      @applet.links << link
-      @applet.begin_link = nil
+        return if @applet.begin_link == nil
+        
+        link = Link.new @applet.begin_link, self
+
+        ## todo : in_links will disappear...
+        @in_links << @applet.begin_link
+        @inputs[input_name] = @applet.begin_link
+
+        @applet.begin_link.out_links << self
+        
+        @applet.links << link
+        @applet.begin_link = nil
+      end
+
     end
+
+
+## disabled...
+    def input_bang
+    end
+
 
     def remove_input boite
       @in_links.delete boite
@@ -189,9 +216,16 @@ module MSSP
     def is_a_bang? ; @data == "bang" ; end
     def is_a_bang ; @data = "bang" ; end
 
+    def input_list 
+      return [] if not has_input?
+      (input.split ",").map { |input| input.chomp }
+    end
+
     def output_created_values; has_output? ? output : "No output ";  end
 
-    def update 
+    def update_global 
+
+      update_graphics
 
       if @name == "always"
         bang
@@ -200,10 +234,9 @@ module MSSP
 
     def draw(graphics)
 
-      update_graphics
 
       if @location_handle.is_pressed 
-        translation
+        translation_at_mouse
       end
 
       graphics.pushMatrix
@@ -257,15 +290,6 @@ module MSSP
       data = {}
       data[name] = value
       data
-
-      # data.out = {}
-      # data.out[name] = value
-
-      # data = OpenStruct.new 
-      # data.graphics = value
-      # data.out = {}
-      # data.out[name] = value
-      # data
     end
 
 

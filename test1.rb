@@ -17,7 +17,7 @@ class MyApp < Processing::App
   include MSSP
 
   attr_reader :cp5
-  attr_accessor :once, :button, :slider
+  attr_accessor :once
   attr_accessor :begin_link
   attr_reader :links
 
@@ -36,14 +36,6 @@ class MyApp < Processing::App
     @cp5 = ControlP5.new self, self
 #    $cp5 = @cp5
 
-    @button = @cp5.addButton("button")
-              .setPosition(40, 200)
-              .setSize(280, 40)
-    
-    @slider = @cp5.addSlider("slider1")
-              .setPosition(0, 0)
-              .setSize(150, 20)
-    
     @cp5.update
 
     @boite_rect = Boite.new "rect", self
@@ -93,15 +85,12 @@ class MyApp < Processing::App
   end
 
   def draw 
+    background 55
 
-
-    background slider1_value 
-
+    ## todo : put list of functions
     @boites.each do |boite|
-      boite.update
-    end
-
-    @boites.each do |boite|
+      boite.update_global
+      boite.update if defined? boite.update
       boite.draw g
     end
 
@@ -120,18 +109,14 @@ class MyApp < Processing::App
       line @begin_link.location.x, @begin_link.location.y, mouse_x, mouse_y
     end
 
-    # puts mouse_x
-    # self.slider1_value = mouse_x
+
   end
 
   def mouse_dragged
-    slider1_value = mouse_x
 
-    puts "mouse dragged" 
   end
 
   def mouse_pressed
-    puts "mouse pressed" 
 
     @links.each do |link|
      selected = link.check_click mouse_x, mouse_y
@@ -157,24 +142,6 @@ class MyApp < Processing::App
   end
 
   
-  def button
-    puts "Button pressed"
-    self.slider1_value = 10
-  end
-
-  def slider1 value
-    puts "Slider event " + value.to_s
-  end
-
-  def test
-    puts "test"
-  end
-
-
-
-
-
-
 end
 
 

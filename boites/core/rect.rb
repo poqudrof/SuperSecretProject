@@ -1,6 +1,6 @@
 
 def input
-  "graphics"
+  "graphics,x,y"
 end
 
 def apply data 
