@@ -48,7 +48,7 @@ module MSSP
       if has_input?
         @inputs = {}
         @input_bangs = []
-
+        
         input_list.each do |input|
           name = "input_bang_" + input
 
@@ -93,7 +93,6 @@ module MSSP
         end
       end
       
-
       if has_data? 
         if @output_bang == nil
           @output_bang = @cp5.addBang("output_bang")
@@ -101,7 +100,6 @@ module MSSP
           .setSize(10, 10)
         tooltip "output_bang", output_created_values
         end
-
 
         @output_bang.setPosition(@location.x, @location.y + 20)
       end
@@ -116,78 +114,129 @@ module MSSP
         
         @activation_bang.setPosition(@location.x, @location.y)
       end
-      
 
     end
 
     def bang 
 
-#      puts @name + " Bang !! "
-      ## propagate bangs...
+      ## propagate bangs
       if is_a_bang? 
         @out_links.each { |boite| boite.bang }
         return 
       end
 
-      ## not all inputs are here... 
-      return if not check_inputs
+      is_simple = check_simple_inputs
+      is_mixed = check_mixed_inputs 
+
+#      puts "simple " + is_simple.to_s
+#      puts is_simple.to_s
+      return if not (is_simple or is_mixed)
         
       ## build the input data. 
-
       @data = {}
-      @in_links.each do |input_boite|
-
-        next if not input_boite.has_output?
-
-        input_boite.output.split(",").each do |value_name|
-          @data[value_name] = input_boite.data[value_name]
-        end
-      end
+      is_simple = get_simple_inputs
+      get_mixed_inputs unless is_simple
 
       apply @data
 
       # if has_action? 
       #   apply @data
       # end
-
     end
 
-    def check_inputs
+    def get_simple_inputs
+      input_list.each do |input_name|
 
-      input_data = (@in_links.map{ |boite| boite.output if boite.has_output?}.join ",").split ","
+        return false if not check_input input_name
+        value = nil
+        output_data = @inputs[input_name].data
 
-      contains_all = input.split(",").map do |input_name|  
+        if output_data[input_name] != nil
+          value = output_data[input_name]
+        else 
+          ## get the first value
+          ## Todo get the first output value ?
+
+          first_output_name = @inputs[input_name].output.split(",").first
+
+          value = output_data[first_output_name]
+        end
+
+
+        @data[input_name] = value
+      end
+      true
+    end
+
+    def get_mixed_inputs
+      @in_links.each do |input_boite|
+       next if not input_boite.has_output?
+        input_boite.output.split(",").each do |value_name|
+          @data[value_name] = input_boite.data[value_name]
+        end
+      end
+    end
+
+
+    def check_mixed_inputs
+      input_data = all_inputs
+      contains_all = input_list.map do |input_name|  
         input_data.include? input_name
       end
-
-      # all true ?
       contains_all.all?
     end
 
+    def check_simple_inputs
+      input_list.each do |input_name|
+        return false if @inputs[input_name] == nil
+      end
+      true
+    end
+
+    def check_input name
+      not ((@inputs[name] == nil) or (not @inputs[name].has_output?) or (@inputs[name].is_a_bang?))
+    end
+
+
+    def all_inputs 
+      in_array = @in_links.map do |boite| 
+        next if not boite.has_output? or boite.is_a_bang?
+        boite.output
+      end
+      in_array = in_array.join(",").split(",")
+      in_array.each { |name| name.chomp! } 
+    end
 
     def output_bang
       @applet.begin_link = self
     end
 
+    def create_input_bang(name, input_name)
 
-    def create_input_bang name, input_name
-
-      create_method(name) do 
-
+      define_singleton_method(name.to_sym) do  #input_proc(input_name))
+        puts "bang in " + input_name
         return if @applet.begin_link == nil
         
         link = Link.new @applet.begin_link, self
 
-        ## todo : in_links will disappear...
-        @in_links << @applet.begin_link
-        @inputs[input_name] = @applet.begin_link
+        ## simple link 
+        link.transmitted_values << input_name
 
+        ## all links coming here and leaving there. 
+        @in_links << @applet.begin_link
         @applet.begin_link.out_links << self
-        
+      
+        ## where this input comes from. 
+        @inputs[input_name] = @applet.begin_link unless @applet.begin_link.is_a_bang?
+
+        ## store the link
         @applet.links << link
         @applet.begin_link = nil
       end
 
+    end
+
+    def input_proc input_name
     end
 
 
@@ -259,6 +308,10 @@ module MSSP
       file = File.read @file
       instance_eval file
 
+    end
+
+    def parse_file file
+#      s.replace "world"   #=> "world"
     end
 
 

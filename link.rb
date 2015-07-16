@@ -2,11 +2,12 @@
 module MSSP
 
   class Link
-    attr_reader :in_boite, :out_boite
+    attr_reader :in_boite, :out_boite, :transmitted_values
 
     def initialize(begin_element, end_element)
       @out_boite = begin_element
       @in_boite = end_element
+      @transmitted_values = []
     end
 
     def draw(graphics) 
@@ -21,6 +22,9 @@ module MSSP
       b = Vec2D.new(x,y)
       a = @in_boite.location 
       c = @out_boite.location 
+
+      # check distance to the box 
+      return false if b.dist(a) < 20 or b.dist(c) < 20
 
       dist = a.dist(b) + b.dist(c) 
       dist_a_c = a.dist(c)
