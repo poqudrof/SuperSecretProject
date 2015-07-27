@@ -4,17 +4,22 @@ module MSSP
   class Link
     attr_reader :in_boite, :out_boite, :transmitted_values
 
-    def initialize(begin_element, end_element)
+    def initialize(begin_element, end_element, end_id)
       @out_boite = begin_element
       @in_boite = end_element
       @transmitted_values = []
+
+      @in_boite_index = end_id
     end
 
     def draw(graphics) 
-      graphics.line(@in_boite.location.x, 
+      input_offset = @in_boite_index * @in_boite.input_space
+
+      graphics.line(@in_boite.location.x + input_offset,
                     @in_boite.location.y, 
-                    @out_boite.location.x,  
+                    @out_boite.location.x,
                     @out_boite.location.y)
+
     end
 
     def check_click(x,y)

@@ -4,10 +4,28 @@ require './link'
 
 module MSSP
 
+  class InputBang
+    attr_reader :boite, :controller, :index
+    attr_reader :source
+
+    def initialize boite, name, controller, index
+      @boite, @name, @controller, @index = boite, name, controller, index
+    end
+
+    def controller_name ; "input_bang_" + @name ; end
+    def fill_with source; @source = source ; end
+    def is_filled? ; @source != nil ; end
+    def fill_with(source) ; @source = source ; end 
+    def unfill ; @source = nil ; end 
+
+    def self.controller_name(name) ; "input_bang_" + name ; end
+
+  end
 
   class Boite 
     
     attr_reader :name, :location, :out_links, :in_links, :data
+    attr_reader :input_space
     
     def create_method(name, &block)
       self.class.send(:define_method, name, &block)
@@ -20,6 +38,7 @@ module MSSP
       @file = "boites/core/" + @name + ".rb"
       @in_links = []
       @out_links = []
+      @input_space = 13
 
       load_code
 
@@ -47,19 +66,21 @@ module MSSP
 
       if has_input?
         @inputs = {}
-        @input_bangs = []
+        @input_bangs = {}
         
-        input_list.each do |input|
-          name = "input_bang_" + input
+        input_list.each_with_index do |input, index|
 
-          create_input_bang name, input
-          @inputs[input] = nil
-
-          ## TODO: input placement
-          @input_bangs << @cp5.addButton(name)
+          name = InputBang::contoller_name input
+          controller = @cp5.addButton(name)
             .setLabel("")
             .setSize(10, 10)
           tooltip name, input
+
+          input_bang = InputBang.new self, name, controller, index
+
+          @input_bangs[input] = input_bangs
+          define_input_bang_method input_bang
+
         end
       end
 
@@ -73,49 +94,89 @@ module MSSP
     end
 
 
+
+    def define_input_bang_method(input_bang)
+
+      define_singleton_method(input_bang.name.to_sym) do 
+        puts "bang in " + input_bang.name
+
+        return if @applet.begin_link == nil
+        
+        link = Link.new @applet.begin_link, self, index 
+
+        ## simple link 
+        link.transmitted_values << input_name
+
+        ## all links coming here and leaving there. 
+        @in_links << @applet.begin_link
+        @applet.begin_link.out_links << self
+      
+        ## where this input comes from. 
+        if not @applet.begin_link.is_a_bang?
+          @inputs[input_name] = @applet.begin_link
+          input_bang.fill_with @applet.begin_link
+        end
+
+        ## store the link
+        @applet.links << link
+        @applet.begin_link = nil
+      end
+
+    end
+
+
+
     def translation_at_mouse
       @location.x, @location.y = @applet.mouseX, @applet.mouseY
     end
 
     def update_graphics
+      update_common
+
+      update_create if can_create? and @creation_bang != nil
+      update_has_input if has_input? and @input_bangs != nil
+      update_with_data if has_data? 
+      update_bang if is_a_bang?
+    end
+
+    def update_common
       @location_handle.setPosition(@location.x + 50, @location.y)
       @edit_button.setPosition(@location.x + 60, @location.y + 10)
       @delete_button.setPosition(@location.x + 60, @location.y + 20)
+    end
+
+    def update_create
+      @creation_bang.setPosition(@location.x + 60, @location.y )
+    end
 
 
-      if can_create? and @creation_bang != nil
-        @creation_bang.setPosition(@location.x + 60, @location.y )
+    def update_has_input
+      @input_bangs.each_value do |bang|
+        bang.controller.setPosition(@location.x + (bang.index * @input_space), @location.y )
       end
+    end
 
-      if has_input? and @input_bangs != nil
-        @input_bangs.each_with_index do |bang, index|
-          bang.setPosition(@location.x + (index * 15), @location.y )
-        end
-      end
-      
-      if has_data? 
-        if @output_bang == nil
-          @output_bang = @cp5.addBang("output_bang")
-            .setLabel("")
+
+    def update_with_data
+      if @output_bang == nil
+        @output_bang = @cp5.addBang("output_bang")
+          .setLabel("")
           .setSize(10, 10)
         tooltip "output_bang", output_created_values
-        end
-
-        @output_bang.setPosition(@location.x, @location.y + 20)
       end
-
-      if is_a_bang?
-        if @activation_bang == nil 
-          @activation_bang = @cp5.addBang("bang")
-            .setLabel("")
-            .setSize(20, 20)
-          tooltip "bang", "Bang!"
-        end
-        
-        @activation_bang.setPosition(@location.x, @location.y)
-      end
-
+      @output_bang.setPosition(@location.x, @location.y + 20)
     end
+
+    def update_bang
+      if @activation_bang == nil 
+        @activation_bang = @cp5.addBang("bang")
+          .setLabel("")
+          .setSize(20, 20)
+        tooltip "bang", "Bang!"
+      end
+      @activation_bang.setPosition(@location.x, @location.y)
+    end
+
 
     def bang 
 
@@ -134,8 +195,8 @@ module MSSP
         
       ## build the input data. 
       @data = {}
-      is_simple = get_simple_inputs
-      get_mixed_inputs unless is_simple
+      is_simple = load_simple_inputs
+      load_mixed_inputs unless is_simple
 
       apply @data
 
@@ -144,10 +205,11 @@ module MSSP
       # end
     end
 
-    def get_simple_inputs
+
+    def load_simple_inputs
       input_list.each do |input_name|
 
-        return false if not check_input input_name
+        return false if not check_plugged_input input_name
         value = nil
         output_data = @inputs[input_name].data
 
@@ -168,7 +230,7 @@ module MSSP
       true
     end
 
-    def get_mixed_inputs
+    def load_mixed_inputs
       @in_links.each do |input_boite|
        next if not input_boite.has_output?
         input_boite.output.split(",").each do |value_name|
@@ -179,7 +241,7 @@ module MSSP
 
 
     def check_mixed_inputs
-      input_data = all_inputs
+      input_data = all_plugged_inputs
       contains_all = input_list.map do |input_name|  
         input_data.include? input_name
       end
@@ -193,12 +255,12 @@ module MSSP
       true
     end
 
-    def check_input name
+    def check_plugged_input name
       not ((@inputs[name] == nil) or (not @inputs[name].has_output?) or (@inputs[name].is_a_bang?))
     end
 
 
-    def all_inputs 
+    def all_plugged_inputs 
       in_array = @in_links.map do |boite| 
         next if not boite.has_output? or boite.is_a_bang?
         boite.output
@@ -211,42 +273,18 @@ module MSSP
       @applet.begin_link = self
     end
 
-    def create_input_bang(name, input_name)
 
-      define_singleton_method(name.to_sym) do  #input_proc(input_name))
-        puts "bang in " + input_name
-        return if @applet.begin_link == nil
-        
-        link = Link.new @applet.begin_link, self
-
-        ## simple link 
-        link.transmitted_values << input_name
-
-        ## all links coming here and leaving there. 
-        @in_links << @applet.begin_link
-        @applet.begin_link.out_links << self
-      
-        ## where this input comes from. 
-        @inputs[input_name] = @applet.begin_link unless @applet.begin_link.is_a_bang?
-
-        ## store the link
-        @applet.links << link
-        @applet.begin_link = nil
-      end
+    
+    def link_position link
 
     end
 
-    def input_proc input_name
-    end
-
-
-## disabled...
-    def input_bang
-    end
-
-
+## todo :handle inputbangs
     def remove_input boite
       @in_links.delete boite
+      @inputs.delete_if { |key, value| value == boite }
+      
+#      input_bang.fill_with @applet.begin_link
     end
 
     def remove_output boite
@@ -273,7 +311,6 @@ module MSSP
     def output_created_values; has_output? ? output : "No output ";  end
 
     def update_global 
-
       update_graphics
 
       if @name == "always"
@@ -282,7 +319,6 @@ module MSSP
     end
 
     def draw(graphics)
-
 
       if @location_handle.is_pressed 
         translation_at_mouse
