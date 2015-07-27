@@ -106,15 +106,12 @@ module MSSP
     def input_bang_multi_input
       puts "bang in multi_input"
       return if @applet.begin_link == nil
-      
-      link = Link.new @applet.begin_link, self, -1 
-      link.bang = @applet.begin_link.is_a_bang? 
-
-      ## which values are transmitted ?
-      ## link.transmitted_values << input_name
 
       input_bang = @input_bangs["multi_input"]
       
+      link = Link.new @applet.begin_link, self, input_bang, -1 
+      link.bang = @applet.begin_link.is_a_bang? 
+
       ## add the input...
       input_bang.sources << @applet.begin_link
       
@@ -136,14 +133,12 @@ module MSSP
         return if @applet.begin_link == nil
         return if @applet.begin_link.is_a_bang?
 
-         
-        link = Link.new @applet.begin_link, self, input_bang.index 
+        link = Link.new @applet.begin_link, self, input_bang, input_bang.index 
 
         ## simple link 
         link.transmitted_values << input_bang.name
 
         clear_prev_link(input_bang)
-
 
         input_bang.fill_with @applet.begin_link
         
@@ -299,7 +294,6 @@ module MSSP
       ## load the data from the individual inputs
       input_list.each do |input_name|
         # create the variable
-        value = nil
 
         ## best case, the input is plugged in a slot. 
         if check_plugged_input input_name
@@ -309,11 +303,11 @@ module MSSP
 
           ## if there is a corresponding data. 
           if incoming_data[input_name] != nil
-            value = incoming_data[input_name]
+            @data[input_name] = incoming_data[input_name]
           else 
             ## get the first value
             first_output_name = input_boite_outputs(input_name).split(",").first
-            value = incoming_data[first_output_name]
+            @data[input_name] = incoming_data[first_output_name]
           end
         else
 
@@ -322,56 +316,32 @@ module MSSP
 
         end
 
-        @data[input_name] = value
+
       end
 
       true
     end
 
-    
-    # def check_mixed_inputs
-    #   input_data = all_plugged_inputs
-    #   contains_all = input_list.map do |input_name|  
-    #     input_data.include? input_name
-    #   end
-    #   contains_all.all?
-    # end
-
-    # def check_simple_inputs
-    #   input_list.each do |input_name|
-    #     return false if @inputs[input_name] == nil
-    #   end
-    #   true
-    # end
-
     def check_plugged_input name ; @input_bangs[name].is_filled? ; end
     def input_boite name ; @input_bangs[name].source ; end
     def input_boite_outputs name ; @input_bangs[name].source.output ; end
 
-
-    # def all_plugged_inputs 
-    #   in_array = @in_links.map do |boite| 
-    #     next if not boite.has_output? or boite.is_a_bang?
-    #     boite.output
-    #   end
-    #   in_array = in_array.join(",").split(",")
-    #   in_array.each { |name| name.chomp! } 
-    # end
-
+    ## use of this ?
     def output_bang
       @applet.begin_link = self
     end
 
-
-
-## todo !
-    def remove_input boite
-
-#      @inputs.delete_if { |key, value| value == boite }
-#      input_bang.fill_with @applet.begin_link
+    def remove_input link, boite
+      ## multi-input link. 
+      if link.input_bang == @input_bangs["multi_input"]
+        link.input_bang.sources.delete(boite)
+      else
+        ## simple link.. 
+        link.input_bang.unfill
+      end
     end
 
-    def remove_output boite
+    def remove_output link, boite
       @out_links.delete boite
     end
 

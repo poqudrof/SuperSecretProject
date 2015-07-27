@@ -2,15 +2,17 @@
 module MSSP
 
   class Link
-    attr_reader :in_boite, :out_boite, :transmitted_values
+    attr_reader :in_boite, :out_boite, :transmitted_values, :input_bang
     attr_accessor :bang
     
-    def initialize(begin_element, end_element, end_id)
+    def initialize(begin_element, end_element, input_bang, end_id)
       @out_boite = begin_element
       @in_boite = end_element
       @transmitted_values = []
 
       @in_boite_index = end_id
+
+      @input_bang = input_bang
       @bang = false
     end
 
@@ -47,8 +49,8 @@ module MSSP
       # @out_boite.remove_input @in_boite
       # @in_boite.remove_output @out_boite
 
-      @in_boite.remove_input @out_boite
-      @out_boite.remove_output @in_boite
+      @in_boite.remove_input self, @out_boite
+      @out_boite.remove_output self, @in_boite
     end
 
   end
