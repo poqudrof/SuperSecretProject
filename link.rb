@@ -12,7 +12,9 @@ module MSSP
       @in_boite_index = end_id
     end
 
-    def draw(graphics) 
+    def draw(graphics)
+
+    graphics.fill(245,27,27) if @out_boite.is_a_bang?
       input_offset = @in_boite_index * @in_boite.input_space
 
       graphics.line(@in_boite.location.x + input_offset,
