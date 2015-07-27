@@ -3,12 +3,12 @@ def input
   "graphics,x,y"
 end
 
-def apply data 
+def apply
 
-  data["graphics"].rect data["x"], data["y"], 150, 150
+  graphics.rect x, y, 150, 150
 
-## to become... 
-#..  graphics.rect x, y, 150, 150
+## was... 
+#..  @data["graphics"].rect " @data["x"], @data["y"], 150, 150
   data
 end
 

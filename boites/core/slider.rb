@@ -10,7 +10,7 @@ def create
 
   @cp5.update
 
-  @data["value"] = slider_value
+  value = slider_value
   @data
 end
 
@@ -20,7 +20,7 @@ def update
 end
 
 
-def apply data 
-  @data["value"] = slider_value
+def apply 
+  value = slider_value
   @data	
 end	

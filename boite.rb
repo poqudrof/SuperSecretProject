@@ -221,62 +221,8 @@ module MSSP
       has_all = load_inputs
       return if not has_all
 
-      apply @data
+      apply
       
-#      is_simple = check_simple_inputs
-#      is_mixed = check_mixed_inputs 
-
-#      puts "simple " + is_simple.to_s
-#      puts is_simple.to_s
-#      return if not (is_simple or is_mixed)
-        
-      ## build the input data. 
-
-#      is_simple = load_simple_inputs
-#      load_mixed_inputs unless is_simple
-
-      # if has_action? 
-      #   apply @data
-      # end
-    end
-
-
-    # def load_simple_inputs
-    #   input_list.each do |input_name|
-
-    #     return false if not check_plugged_input input_name
-    #     value = nil
-    #     output_data = @inputs[input_name].data
-
-    #     if output_data[input_name] != nil
-    #       value = output_data[input_name]
-    #     else 
-    #       ## get the first value
-    #       ## Todo get the first output value ?
-
-    #       first_output_name = @inputs[input_name].output.split(",").first
-
-    #       value = output_data[first_output_name]
-    #     end
-
-
-    #     @data[input_name] = value
-    #   end
-    #   true
-    # end
-
-    # def load_mixed_inputs
-    #   @in_links.each do |input_boite|
-    #    next if not input_boite.has_output?
-    #     input_boite.output.split(",").each do |value_name|
-    #       @data[value_name] = input_boite.data[value_name]
-    #     end
-    #   end
-    # end
-
-
-    def check_inputs
-
     end
 
     def load_inputs
@@ -289,7 +235,6 @@ module MSSP
           @data[value_name] = input_boite.data[value_name]
         end
       end
-
       
       ## load the data from the individual inputs
       input_list.each do |input_name|
@@ -310,13 +255,9 @@ module MSSP
             @data[input_name] = incoming_data[first_output_name]
           end
         else
-
           # the value is not plugged, look into the multi-input
           return false if @data[input_name] == nil
-
         end
-
-
       end
 
       true
@@ -326,7 +267,6 @@ module MSSP
     def input_boite name ; @input_bangs[name].source ; end
     def input_boite_outputs name ; @input_bangs[name].source.output ; end
 
-    ## use of this ?
     def output_bang
       @applet.begin_link = self
     end
@@ -362,7 +302,12 @@ module MSSP
       (input.split ",").map { |input| input.chomp }
     end
 
-    def output_created_values; has_output? ? output : "No output ";  end
+    def output_list
+      return [] if not has_output?
+      (output.split ",").map { |output| output.chomp }
+    end      
+
+    def output_created_values ; has_output? ? output : "No output ";  end
 
     def update_global 
       update_graphics
@@ -392,13 +337,40 @@ module MSSP
     ## Code related methods
 
     def load_code
-
       edit if not File.exists? @file
 
       file = File.read @file
+
+      ## first eval
       instance_eval file
 
+      remove_input_output file
+      
+      output_list.each do |output_name|
+        file.gsub! parsed_name(output_name), long_name(output_name)
+      end
+      
+      input_list.each do |input_name|
+        file.gsub! parsed_name(input_name), long_name(input_name)
+      end
+      
+      puts file
+      instance_eval file
     end
+
+    def remove_input_output(file)
+      file.gsub! /def input(\s*(.*)\s*end)/, ""
+      file.gsub! /def output(\s*(.*)\s*end)/, ""
+    end
+
+    def parsed_name (name)
+      /(?<before>[=.\s,])#{name}(?<after>[=.\s,])/
+    end
+
+    def long_name (name)
+      "\\k<before>@data[\"#{name}\"]\\k<after>"
+    end
+
 
     def parse_file file
 #      s.replace "world"   #=> "world"
