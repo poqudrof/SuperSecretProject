@@ -122,8 +122,7 @@ class MyApp < Processing::App
      selected = link.check_click mouse_x, mouse_y
 
       if selected
-        @links.delete link
-        link.delete 
+        delete_link link
       end
     end
     puts @links.size
@@ -139,6 +138,17 @@ class MyApp < Processing::App
       end
     end
 
+  end
+
+  def delete_link link
+    @links.delete link
+    link.delete 
+  end
+
+  def add_link(link, boite)
+    @begin_link.out_links << boite
+    @links << link
+    @begin_link = nil
   end
 
   

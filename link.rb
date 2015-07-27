@@ -3,18 +3,21 @@ module MSSP
 
   class Link
     attr_reader :in_boite, :out_boite, :transmitted_values
-
+    attr_accessor :bang
+    
     def initialize(begin_element, end_element, end_id)
       @out_boite = begin_element
       @in_boite = end_element
       @transmitted_values = []
 
       @in_boite_index = end_id
+      @bang = false
     end
 
     def draw(graphics)
 
-    graphics.fill(245,27,27) if @out_boite.is_a_bang?
+      graphics.fill(245,27,27) if @bang
+
       input_offset = @in_boite_index * @in_boite.input_space
 
       graphics.line(@in_boite.location.x + input_offset,

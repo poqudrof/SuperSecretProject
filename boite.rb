@@ -6,25 +6,27 @@ module MSSP
 
   class InputBang
     attr_reader :boite, :controller, :index
-    attr_reader :source
-
+    attr_reader :source, :name
+    attr_reader :sources
+    
     def initialize boite, name, controller, index
       @boite, @name, @controller, @index = boite, name, controller, index
+      @sources = []
     end
 
     def controller_name ; "input_bang_" + @name ; end
     def fill_with source; @source = source ; end
     def is_filled? ; @source != nil ; end
-    def fill_with(source) ; @source = source ; end 
-    def unfill ; @source = nil ; end 
 
+    def unfill ; @source = nil ; end 
+    
     def self.controller_name(name) ; "input_bang_" + name ; end
 
   end
 
   class Boite 
     
-    attr_reader :name, :location, :out_links, :in_links, :data
+    attr_reader :name, :location, :out_links, :data
     attr_reader :input_space
     
     def create_method(name, &block)
@@ -36,7 +38,8 @@ module MSSP
       @id = rand(36**8).to_s(36)
       @applet = applet
       @file = "boites/core/" + @name + ".rb"
-      @in_links = []
+
+      @links = {}
       @out_links = []
       @input_space = 13
 
@@ -65,66 +68,98 @@ module MSSP
       end
 
       if has_input?
-        @inputs = {}
         @input_bangs = {}
-        
+
+        multi_input = create_input_bang "multi_input", -1
+        @input_bangs["multi_input"] = multi_input
+                
+        ## define a bang for each input. 
         input_list.each_with_index do |input, index|
 
-          name = InputBang::contoller_name input
-          controller = @cp5.addButton(name)
-            .setLabel("")
-            .setSize(10, 10)
-          tooltip name, input
-
-          input_bang = InputBang.new self, name, controller, index
-
-          @input_bangs[input] = input_bangs
+          input_bang = create_input_bang input, index
+          @input_bangs[input] = input_bang
           define_input_bang_method input_bang
-
         end
       end
 
       @cp5.getTooltip.setDelay(200);
       tooltip "translation_at_mouse", "Move"
 
-
       @cp5.update
 
       update_graphics
     end
 
+    def create_input_bang(input_name, index)
+        name = InputBang::controller_name input_name
+        controller = @cp5.addButton(name)
+                     .setLabel("")
+                     .setSize(10, 10)
+        tooltip name, input_name
+        input_bang = InputBang.new self, name, controller, index
+
+    end
 
 
+    
+
+    def input_bang_multi_input
+      puts "bang in multi_input"
+      return if @applet.begin_link == nil
+      
+      link = Link.new @applet.begin_link, self, -1 
+      link.bang = @applet.begin_link.is_a_bang? 
+
+      ## which values are transmitted ?
+      ## link.transmitted_values << input_name
+
+      input_bang = @input_bangs["multi_input"]
+      
+      ## add the input...
+      input_bang.sources << @applet.begin_link
+      
+      ## store the link
+      @links[input_bang.name] = link 
+
+      @applet.add_link(link, self)
+    end
+
+
+    
+    ## inputs can be values, from multiple output. 
+    ## inputs cannot be : bangs. 
     def define_input_bang_method(input_bang)
 
       define_singleton_method(input_bang.name.to_sym) do 
         puts "bang in " + input_bang.name
 
         return if @applet.begin_link == nil
-        
-        link = Link.new @applet.begin_link, self, index 
+        return if @applet.begin_link.is_a_bang?
+
+         
+        link = Link.new @applet.begin_link, self, input_bang.index 
 
         ## simple link 
-        link.transmitted_values << input_name
+        link.transmitted_values << input_bang.name
 
-        ## all links coming here and leaving there. 
-        @in_links << @applet.begin_link
-        @applet.begin_link.out_links << self
-      
-        ## where this input comes from. 
-        if not @applet.begin_link.is_a_bang?
-          @inputs[input_name] = @applet.begin_link
-          input_bang.fill_with @applet.begin_link
-        end
+        clear_prev_link(input_bang)
 
+
+        input_bang.fill_with @applet.begin_link
+        
         ## store the link
-        @applet.links << link
-        @applet.begin_link = nil
+        @links[input_bang.name] = link 
+        
+        @applet.add_link(link, self)
       end
 
     end
 
-
+    def clear_prev_link(input_bang)
+      prev_link = @links[input_bang.name]
+      @applet.delete_link prev_link if prev_link != nil
+    end
+    
 
     def translation_at_mouse
       @location.x, @location.y = @applet.mouseX, @applet.mouseY
@@ -186,19 +221,24 @@ module MSSP
         return 
       end
 
-      is_simple = check_simple_inputs
-      is_mixed = check_mixed_inputs 
+      @data = {}
+      
+      has_all = load_inputs
+      return if not has_all
+
+      apply @data
+      
+#      is_simple = check_simple_inputs
+#      is_mixed = check_mixed_inputs 
 
 #      puts "simple " + is_simple.to_s
 #      puts is_simple.to_s
-      return if not (is_simple or is_mixed)
+#      return if not (is_simple or is_mixed)
         
       ## build the input data. 
-      @data = {}
-      is_simple = load_simple_inputs
-      load_mixed_inputs unless is_simple
 
-      apply @data
+#      is_simple = load_simple_inputs
+#      load_mixed_inputs unless is_simple
 
       # if has_action? 
       #   apply @data
@@ -206,84 +246,128 @@ module MSSP
     end
 
 
-    def load_simple_inputs
-      input_list.each do |input_name|
+    # def load_simple_inputs
+    #   input_list.each do |input_name|
 
-        return false if not check_plugged_input input_name
-        value = nil
-        output_data = @inputs[input_name].data
+    #     return false if not check_plugged_input input_name
+    #     value = nil
+    #     output_data = @inputs[input_name].data
 
-        if output_data[input_name] != nil
-          value = output_data[input_name]
-        else 
-          ## get the first value
-          ## Todo get the first output value ?
+    #     if output_data[input_name] != nil
+    #       value = output_data[input_name]
+    #     else 
+    #       ## get the first value
+    #       ## Todo get the first output value ?
 
-          first_output_name = @inputs[input_name].output.split(",").first
+    #       first_output_name = @inputs[input_name].output.split(",").first
 
-          value = output_data[first_output_name]
-        end
+    #       value = output_data[first_output_name]
+    #     end
 
 
-        @data[input_name] = value
-      end
-      true
+    #     @data[input_name] = value
+    #   end
+    #   true
+    # end
+
+    # def load_mixed_inputs
+    #   @in_links.each do |input_boite|
+    #    next if not input_boite.has_output?
+    #     input_boite.output.split(",").each do |value_name|
+    #       @data[value_name] = input_boite.data[value_name]
+    #     end
+    #   end
+    # end
+
+
+    def check_inputs
+
     end
 
-    def load_mixed_inputs
-      @in_links.each do |input_boite|
-       next if not input_boite.has_output?
+    def load_inputs
+
+
+      ## load all the data from the multi-input 
+      @input_bangs["multi_input"].sources.each do |input_boite|
+        next if not input_boite.has_output?
         input_boite.output.split(",").each do |value_name|
           @data[value_name] = input_boite.data[value_name]
         end
       end
-    end
 
-
-    def check_mixed_inputs
-      input_data = all_plugged_inputs
-      contains_all = input_list.map do |input_name|  
-        input_data.include? input_name
-      end
-      contains_all.all?
-    end
-
-    def check_simple_inputs
+      
+      ## load the data from the individual inputs
       input_list.each do |input_name|
-        return false if @inputs[input_name] == nil
+        # create the variable
+        value = nil
+
+        ## best case, the input is plugged in a slot. 
+        if check_plugged_input input_name
+
+          ## all the data going in this input. 
+          incoming_data = input_boite(input_name).data
+
+          ## if there is a corresponding data. 
+          if incoming_data[input_name] != nil
+            value = incoming_data[input_name]
+          else 
+            ## get the first value
+            first_output_name = input_boite_outputs(input_name).split(",").first
+            value = incoming_data[first_output_name]
+          end
+        else
+
+          # the value is not plugged, look into the multi-input
+          return false if @data[input_name] == nil
+
+        end
+
+        @data[input_name] = value
       end
+
       true
     end
 
-    def check_plugged_input name
-      not ((@inputs[name] == nil) or (not @inputs[name].has_output?) or (@inputs[name].is_a_bang?))
-    end
+    
+    # def check_mixed_inputs
+    #   input_data = all_plugged_inputs
+    #   contains_all = input_list.map do |input_name|  
+    #     input_data.include? input_name
+    #   end
+    #   contains_all.all?
+    # end
+
+    # def check_simple_inputs
+    #   input_list.each do |input_name|
+    #     return false if @inputs[input_name] == nil
+    #   end
+    #   true
+    # end
+
+    def check_plugged_input name ; @input_bangs[name].is_filled? ; end
+    def input_boite name ; @input_bangs[name].source ; end
+    def input_boite_outputs name ; @input_bangs[name].source.output ; end
 
 
-    def all_plugged_inputs 
-      in_array = @in_links.map do |boite| 
-        next if not boite.has_output? or boite.is_a_bang?
-        boite.output
-      end
-      in_array = in_array.join(",").split(",")
-      in_array.each { |name| name.chomp! } 
-    end
+    # def all_plugged_inputs 
+    #   in_array = @in_links.map do |boite| 
+    #     next if not boite.has_output? or boite.is_a_bang?
+    #     boite.output
+    #   end
+    #   in_array = in_array.join(",").split(",")
+    #   in_array.each { |name| name.chomp! } 
+    # end
 
     def output_bang
       @applet.begin_link = self
     end
 
 
-    
-    def link_position link
 
-    end
-
-## todo :handle inputbangs
+## todo !
     def remove_input boite
-      @in_links.delete boite
-      @inputs.delete_if { |key, value| value == boite }
-      
+
+#      @inputs.delete_if { |key, value| value == boite }
 #      input_bang.fill_with @applet.begin_link
     end
 
