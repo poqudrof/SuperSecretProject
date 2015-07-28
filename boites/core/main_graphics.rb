@@ -1,5 +1,6 @@
 def create 
-  @data = create_data(@applet.g, "graphics")
+  @data = {}
+  @data["graphics"] =@applet.g
   @data["toto"] = "Toto value"
   @data
 end

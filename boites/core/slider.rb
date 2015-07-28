@@ -2,6 +2,10 @@ def output
   "value"
 end
 
+def input
+	"min,max"
+end
+
 def create
   @data = {}
   @my_slider = @cp5.addSlider("slider")
@@ -14,13 +18,16 @@ def create
   @data
 end
 
-def update 
-  @my_slider.setPosition(@location.x , @location.y) if @my_slider != nil
-  @data["value"] = slider_value if has_data?
+def update
+  if @my_slider != nil
+    @my_slider.setRange(0 , 1000) 
+    @my_slider.setPosition(@location.x  + 30, @location.y - 10) 
+    value = slider_value if has_data?
+  end
 end
 
 
 def apply 
   value = slider_value
-  @data	
+  puts "apply in slider ?!"
 end	

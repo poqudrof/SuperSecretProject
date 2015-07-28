@@ -33,21 +33,25 @@ module MSSP
       self.class.send(:define_method, name, &block)
     end
   
-    def initialize(name, applet)
-      @name = name
+    def initialize(name, applet, room)
+      @name, @applet, @room = name, applet, room
+
       @id = rand(36**8).to_s(36)
-      @applet = applet
       @file = "boites/core/" + @name + ".rb"
 
       @links = {}
       @out_links = []
       @input_space = 13
 
-      load_code
-
       @location = Vec2D.new 100, 100
 
       @cp5 = ControlP5.new @applet, self
+
+      load_code
+      
+      #      @cp5.setGraphics @room.getGraphics
+      #      @cp5.setAutoDraw false
+      
       @location_handle = @cp5.addButton("translation_at_mouse")
         .setLabel("")
         .setSize(10, 20)
@@ -105,20 +109,20 @@ module MSSP
 
     def input_bang_multi_input
       puts "bang in multi_input"
-      return if @applet.begin_link == nil
+      return if @room.begin_link == nil
 
       input_bang = @input_bangs["multi_input"]
       
-      link = Link.new @applet.begin_link, self, input_bang, -1 
-      link.bang = @applet.begin_link.is_a_bang? 
+      link = Link.new @room.begin_link, self, input_bang, -1 
+      link.bang = @room.begin_link.is_a_bang? 
 
       ## add the input...
-      input_bang.sources << @applet.begin_link
+      input_bang.sources << @room.begin_link
       
       ## store the link
       @links[input_bang.name] = link 
 
-      @applet.add_link(link, self)
+      @room.add_link(link, self)
     end
 
 
@@ -130,29 +134,29 @@ module MSSP
       define_singleton_method(input_bang.name.to_sym) do 
         puts "bang in " + input_bang.name
 
-        return if @applet.begin_link == nil
-        return if @applet.begin_link.is_a_bang?
+        return if @room.begin_link == nil
+        return if @room.begin_link.is_a_bang?
 
-        link = Link.new @applet.begin_link, self, input_bang, input_bang.index 
+        link = Link.new @room.begin_link, self, input_bang, input_bang.index 
 
         ## simple link 
         link.transmitted_values << input_bang.name
 
         clear_prev_link(input_bang)
 
-        input_bang.fill_with @applet.begin_link
+        input_bang.fill_with @room.begin_link
         
         ## store the link
         @links[input_bang.name] = link 
         
-        @applet.add_link(link, self)
+        @room.add_link(link, self)
       end
 
     end
 
     def clear_prev_link(input_bang)
       prev_link = @links[input_bang.name]
-      @applet.delete_link prev_link if prev_link != nil
+      @room.delete_link prev_link if prev_link != nil
     end
     
 
@@ -166,7 +170,7 @@ module MSSP
       update_create if can_create? and @creation_bang != nil
       update_has_input if has_input? and @input_bangs != nil
       update_with_data if has_data? 
-      update_bang if is_a_bang?
+#      update_bang if is_a_bang?
     end
 
     def update_common
@@ -179,13 +183,11 @@ module MSSP
       @creation_bang.setPosition(@location.x + 60, @location.y )
     end
 
-
     def update_has_input
       @input_bangs.each_value do |bang|
         bang.controller.setPosition(@location.x + (bang.index * @input_space), @location.y )
       end
     end
-
 
     def update_with_data
       if @output_bang == nil
@@ -216,23 +218,39 @@ module MSSP
         return 
       end
 
-      @data = {}
-      
-      has_all = load_inputs
-      return if not has_all
+      if @data == nil 
+        @data = {}
+      end
 
-      apply
+      if has_input? 
+        has_all = load_inputs 
+        return if not has_all
+      end
       
+      apply
+
+      # propagate
+      @out_links.each { |boite| boite.bang }
     end
 
+    
     def load_inputs
 
-
       ## load all the data from the multi-input 
-      @input_bangs["multi_input"].sources.each do |input_boite|
-        next if not input_boite.has_output?
-        input_boite.output.split(",").each do |value_name|
-          @data[value_name] = input_boite.data[value_name]
+      @input_bangs["multi_input"].sources.each do |input_boite|     
+
+#        next if not input_boite.has_output?
+
+        if input_boite.has_output?
+          input_boite.output.split(",").each do |value_name|
+            @data[value_name] = input_boite.data[value_name]
+          end
+        else
+          ## no declared output, get the hidden data...
+          if input_boite.data != nil && input_boite.data.class == Hash
+
+            @data.merge! input_boite.data
+          end
         end
       end
       
@@ -256,6 +274,8 @@ module MSSP
           end
         else
           # the value is not plugged, look into the multi-input
+#          puts "missing " + input_name  if @data[input_name] == nil
+          
           return false if @data[input_name] == nil
         end
       end
@@ -268,7 +288,7 @@ module MSSP
     def input_boite_outputs name ; @input_bangs[name].source.output ; end
 
     def output_bang
-      @applet.begin_link = self
+      @room.begin_link = self
     end
 
     def remove_input link, boite
@@ -294,8 +314,8 @@ module MSSP
     def is_new? ; File.exists? @file ; end
     def has_input? ; defined? input ; end
     def has_output? ; defined? output ; end
-    def is_a_bang? ; @data == "bang" ; end
-    def is_a_bang ; @data = "bang" ; end
+    def is_a_bang? ; @bang != nil ; end
+    def is_a_bang ; @bang = true ; end 
 
     def input_list 
       return [] if not has_input?
@@ -307,7 +327,7 @@ module MSSP
       (output.split ",").map { |output| output.chomp }
     end      
 
-    def output_created_values ; has_output? ? output : "No output ";  end
+    def output_created_values ; has_output? ? output : "Forward data";  end
 
     def update_global 
       update_graphics
@@ -317,7 +337,7 @@ module MSSP
       end
     end
 
-    def draw(graphics)
+    def global_draw(graphics)
 
       if @location_handle.is_pressed 
         translation_at_mouse
@@ -325,25 +345,44 @@ module MSSP
 
       graphics.pushMatrix
       graphics.translate @location.x, @location.y
-      graphics.fill 200
+
+      graphics.noStroke
+      graphics.fill 0
       graphics.rect(0, 0, 50, 20)
 
       graphics.translate(0, - 5)
+      graphics.fill 255
       graphics.text @name, 0, 0
+
+      graphics.translate(0, 5)
+      draw graphics
+
       graphics.popMatrix
     end
+
+    ## functions to override
+    def draw graphics;  end
+    def update ; bang ; end
+    def apply ; end
     
 
     ## Code related methods
 
     def load_code
       edit if not File.exists? @file
-
+      return if not File.exists? @file
+      
       file = File.read @file
 
-      ## first eval
-      instance_eval file
+      begin 
+        ## first eval
+        instance_eval file
+      rescue 
+        puts "syntax error in " + @file.to_s
+        edit
+      end
 
+      
       remove_input_output file
       
       output_list.each do |output_name|
@@ -356,6 +395,12 @@ module MSSP
       
       puts file
       instance_eval file
+
+      if defined? create
+        @data = {}
+        create 
+      end
+      
     end
 
     def remove_input_output(file)
@@ -364,7 +409,7 @@ module MSSP
     end
 
     def parsed_name (name)
-      /(?<before>[=.\s,])#{name}(?<after>[=.\s,])/
+      /(?<before>[\(\)=.\s,])#{name}(?<after>[\(\)=.\s,])/
     end
 
     def long_name (name)
@@ -383,22 +428,18 @@ module MSSP
     end
 
     def delete
-      @to_remove = true
 
-      @cp5.setAutoDraw false
+      @room.remove self
 
-      @applet.remove self
-
-      @cp5.remove "edit"
-      @cp5.remove "delete"
-      
-      puts @cp5.getAll
-
+      # puts @cp5.getAll
       @cp5.getAll.each do |controller| 
         @cp5.remove controller
       end
-
+      @cp5.delete
+      @cp5 = nil
+      puts "Delete ended. "
     end
+
 
     
     def create_data (value, name)
@@ -407,6 +448,13 @@ module MSSP
       data
     end
 
+
+    java_signature 'processing.core.PGraphics getGraphics()'
+    def getGraphics
+      @room.getGraphics
+    end
+    
+    Boite.become_java!
 
   end 
 
