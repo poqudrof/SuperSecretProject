@@ -5,23 +5,23 @@ class Room
 
   attr_reader :links, :boites, :graphics
   attr_accessor :begin_link
-  
+
   def create_method(name, &block)
     self.class.send(:define_method, name, &block)
   end
 
   def initialize (applet, width, height)
     @applet, @width, @height = applet, width, height
-    @graphics = @applet.createGraphics(@width, @height, OPENGL) 
+    @graphics = @applet.createGraphics(@width, @height, OPENGL)
 
     @boites = []
     @links = []
     @begin_link = nil
 
-    @cp5 = ControlP5.new @applet, self
+    @skatolo = Skatolo.new @applet, self
     @applet.registerMethod("mousePressed", self)
-    
-    
+
+
     @boite_rect = Boite.new "rect", @applet, self
     @boite_graphics = Boite.new "current_graphics", @applet, self
 
@@ -40,10 +40,10 @@ class Room
 
     @to_delete = []
   end
-  
+
 
   def draw
-    
+
     @graphics.beginDraw
     @graphics.background 55, 0, 0
 
@@ -58,7 +58,7 @@ class Room
     @graphics.fill 0
     @graphics.stroke 180
     @graphics.strokeWeight 1
-    
+
     @links.each do |link|
       link.draw @graphics
     end
@@ -78,7 +78,7 @@ class Room
   def mouse_pressed
     @links.each do |link|
       selected = link.check_click @applet.mouse_x, @applet.mouse_y
-      
+
       if selected
         delete_link link
       end
@@ -87,18 +87,18 @@ class Room
     # puts @applet.mouseEvent.getClickCount
 
     if(@applet.mouseEvent != nil and @applet.mouseEvent.getClickCount == 2)
-      
+
       if @text_field == nil
-        @text_field = @cp5.addTextfield("boite")
+        @text_field = @skatolo.addTextfield("boite")
                       .setPosition(mouse_x, mouse_y)
                       .setSize(150, 20)
-        @cp5.update
+        @skatolo.update
       end
     end
-    
+
   end
 
-  
+
   def remove boite
     @boites.delete boite
   end
@@ -106,7 +106,7 @@ class Room
 
   def boite name
 
-    if name == "" 
+    if name == ""
       remove_boite
       return
     end
@@ -128,23 +128,23 @@ class Room
     @boites << boite
     remove_boite
   end
-  
+
   def is_a_number name
     return (name =~ /\A[-+]?\d*\.?\d+\z/) == 0
   end
-      
+
   def remove_boite
-    @cp5.remove "boite"
+    @skatolo.remove "boite"
     @text_field = nil
 
   end
 
-  
+
   def delete_link link
     @links.delete link
-    link.delete 
+    link.delete
   end
-  
+
   def add_link(link, boite)
     @begin_link.out_links << boite
     @links << link
@@ -161,6 +161,6 @@ class Room
     mouse_pressed
   end
 
-  
+
   Room.become_java!
 end

@@ -8,7 +8,7 @@ module MSSP
     attr_reader :boite, :controller, :index
     attr_reader :source, :name
     attr_reader :sources
-    
+
     def initialize boite, name, controller, index
       @boite, @name, @controller, @index = boite, name, controller, index
       @sources = []
@@ -18,21 +18,21 @@ module MSSP
     def fill_with source; @source = source ; end
     def is_filled? ; @source != nil ; end
 
-    def unfill ; @source = nil ; end 
-    
+    def unfill ; @source = nil ; end
+
     def self.controller_name(name) ; "input_bang_" + name ; end
 
   end
 
-  class Boite 
-    
+  class Boite
+
     attr_reader :name, :location, :out_links, :data
     attr_reader :input_space
-    
+
     def create_method(name, &block)
       self.class.send(:define_method, name, &block)
     end
-  
+
     def initialize(name, applet, room)
       @name, @applet, @room = name, applet, room
 
@@ -45,27 +45,27 @@ module MSSP
 
       @location = Vec2D.new 100, 100
 
-      @cp5 = ControlP5.new @applet, self
+      @skatolo = Skatolo.new @applet, self
 
       load_code
-      
-      #      @cp5.setGraphics @room.getGraphics
-      #      @cp5.setAutoDraw false
-      
-      @location_handle = @cp5.addButton("translation_at_mouse")
+
+      #      @skatolo.setGraphics @room.getGraphics
+      #      @skatolo.setAutoDraw false
+
+      @location_handle = @skatolo.addButton("translation_at_mouse")
         .setLabel("")
         .setSize(10, 20)
 
-      @edit_button = @cp5.addButton("edit")
+      @edit_button = @skatolo.addButton("edit")
         .setLabel("edit")
         .setSize(30, 10)
 
-      @delete_button = @cp5.addButton("delete")
+      @delete_button = @skatolo.addButton("delete")
         .setLabel("del")
         .setSize(13, 10)
 
-      if can_create? 
-        @creation_bang = @cp5.addButton("create")
+      if can_create?
+        @creation_bang = @skatolo.addButton("create")
           .setLabel("create")
           .setSize(40, 10)
         tooltip "create", "create data"
@@ -76,8 +76,8 @@ module MSSP
 
         multi_input = create_input_bang "multi_input", -1
         @input_bangs["multi_input"] = multi_input
-                
-        ## define a bang for each input. 
+
+        ## define a bang for each input.
         input_list.each_with_index do |input, index|
 
           input_bang = create_input_bang input, index
@@ -86,17 +86,17 @@ module MSSP
         end
       end
 
-      @cp5.getTooltip.setDelay(200);
+      @skatolo.getTooltip.setDelay(200);
       tooltip "translation_at_mouse", "Move"
 
-      @cp5.update
+      @skatolo.update
 
       update_graphics
     end
 
     def create_input_bang(input_name, index)
         name = InputBang::controller_name input_name
-        controller = @cp5.addButton(name)
+        controller = @skatolo.addButton(name)
                      .setLabel("")
                      .setSize(10, 10)
         tooltip name, input_name
@@ -105,50 +105,50 @@ module MSSP
     end
 
 
-    
+
 
     def input_bang_multi_input
       puts "bang in multi_input"
       return if @room.begin_link == nil
 
       input_bang = @input_bangs["multi_input"]
-      
-      link = Link.new @room.begin_link, self, input_bang, -1 
-      link.bang = @room.begin_link.is_a_bang? 
+
+      link = Link.new @room.begin_link, self, input_bang, -1
+      link.bang = @room.begin_link.is_a_bang?
 
       ## add the input...
       input_bang.sources << @room.begin_link
-      
+
       ## store the link
-      @links[input_bang.name] = link 
+      @links[input_bang.name] = link
 
       @room.add_link(link, self)
     end
 
 
-    
-    ## inputs can be values, from multiple output. 
-    ## inputs cannot be : bangs. 
+
+    ## inputs can be values, from multiple output.
+    ## inputs cannot be : bangs.
     def define_input_bang_method(input_bang)
 
-      define_singleton_method(input_bang.name.to_sym) do 
+      define_singleton_method(input_bang.name.to_sym) do
         puts "bang in " + input_bang.name
 
         return if @room.begin_link == nil
         return if @room.begin_link.is_a_bang?
 
-        link = Link.new @room.begin_link, self, input_bang, input_bang.index 
+        link = Link.new @room.begin_link, self, input_bang, input_bang.index
 
-        ## simple link 
+        ## simple link
         link.transmitted_values << input_bang.name
 
         clear_prev_link(input_bang)
 
         input_bang.fill_with @room.begin_link
-        
+
         ## store the link
-        @links[input_bang.name] = link 
-        
+        @links[input_bang.name] = link
+
         @room.add_link(link, self)
       end
 
@@ -158,7 +158,7 @@ module MSSP
       prev_link = @links[input_bang.name]
       @room.delete_link prev_link if prev_link != nil
     end
-    
+
 
     def translation_at_mouse
       @location.x, @location.y = @applet.mouseX, @applet.mouseY
@@ -169,7 +169,7 @@ module MSSP
 
       update_create if can_create? and @creation_bang != nil
       update_has_input if has_input? and @input_bangs != nil
-      update_with_data if has_data? 
+      update_with_data if has_data?
 #      update_bang if is_a_bang?
     end
 
@@ -191,7 +191,7 @@ module MSSP
 
     def update_with_data
       if @output_bang == nil
-        @output_bang = @cp5.addBang("output_bang")
+        @output_bang = @skatolo.addBang("output_bang")
           .setLabel("")
           .setSize(10, 10)
         tooltip "output_bang", output_created_values
@@ -200,8 +200,8 @@ module MSSP
     end
 
     def update_bang
-      if @activation_bang == nil 
-        @activation_bang = @cp5.addBang("bang")
+      if @activation_bang == nil
+        @activation_bang = @skatolo.addBang("bang")
           .setLabel("")
           .setSize(20, 20)
         tooltip "bang", "Bang!"
@@ -210,34 +210,34 @@ module MSSP
     end
 
 
-    def bang 
+    def bang
 
       ## propagate bangs
-      if is_a_bang? 
+      if is_a_bang?
         @out_links.each { |boite| boite.bang }
-        return 
+        return
       end
 
-      if @data == nil 
+      if @data == nil
         @data = {}
       end
 
-      if has_input? 
-        has_all = load_inputs 
+      if has_input?
+        has_all = load_inputs
         return if not has_all
       end
-      
+
       apply
 
       # propagate
       @out_links.each { |boite| boite.bang }
     end
 
-    
+
     def load_inputs
 
-      ## load all the data from the multi-input 
-      @input_bangs["multi_input"].sources.each do |input_boite|     
+      ## load all the data from the multi-input
+      @input_bangs["multi_input"].sources.each do |input_boite|
 
 #        next if not input_boite.has_output?
 
@@ -253,21 +253,21 @@ module MSSP
           end
         end
       end
-      
+
       ## load the data from the individual inputs
       input_list.each do |input_name|
         # create the variable
 
-        ## best case, the input is plugged in a slot. 
+        ## best case, the input is plugged in a slot.
         if check_plugged_input input_name
 
-          ## all the data going in this input. 
+          ## all the data going in this input.
           incoming_data = input_boite(input_name).data
 
-          ## if there is a corresponding data. 
+          ## if there is a corresponding data.
           if incoming_data[input_name] != nil
             @data[input_name] = incoming_data[input_name]
-          else 
+          else
             ## get the first value
             first_output_name = input_boite_outputs(input_name).split(",").first
             @data[input_name] = incoming_data[first_output_name]
@@ -275,7 +275,7 @@ module MSSP
         else
           # the value is not plugged, look into the multi-input
 #          puts "missing " + input_name  if @data[input_name] == nil
-          
+
           return false if @data[input_name] == nil
         end
       end
@@ -292,11 +292,11 @@ module MSSP
     end
 
     def remove_input link, boite
-      ## multi-input link. 
+      ## multi-input link.
       if link.input_bang == @input_bangs["multi_input"]
         link.input_bang.sources.delete(boite)
       else
-        ## simple link.. 
+        ## simple link..
         link.input_bang.unfill
       end
     end
@@ -306,18 +306,18 @@ module MSSP
     end
 
     def get_binding ; binding ; end
-    def tooltip(name, text) ; @cp5.getTooltip.register(name, text); end
+    def tooltip(name, text) ; @skatolo.getTooltip.register(name, text); end
 
     def can_create? ; defined? create ; end
-    def has_data? ;  defined? @data ; end 
-    def has_action? ;  defined? apply ; end 
+    def has_data? ;  defined? @data ; end
+    def has_action? ;  defined? apply ; end
     def is_new? ; File.exists? @file ; end
     def has_input? ; defined? input ; end
     def has_output? ; defined? output ; end
     def is_a_bang? ; @bang != nil ; end
-    def is_a_bang ; @bang = true ; end 
+    def is_a_bang ; @bang = true ; end
 
-    def input_list 
+    def input_list
       return [] if not has_input?
       (input.split ",").map { |input| input.chomp }
     end
@@ -325,11 +325,11 @@ module MSSP
     def output_list
       return [] if not has_output?
       (output.split ",").map { |output| output.chomp }
-    end      
+    end
 
     def output_created_values ; has_output? ? output : "Forward data";  end
 
-    def update_global 
+    def update_global
       update_graphics
 
       if @name == "always"
@@ -339,7 +339,7 @@ module MSSP
 
     def global_draw(graphics)
 
-      if @location_handle.is_pressed 
+      if @location_handle.is_pressed
         translation_at_mouse
       end
 
@@ -364,43 +364,43 @@ module MSSP
     def draw graphics;  end
     def update ; bang ; end
     def apply ; end
-    
+
 
     ## Code related methods
 
     def load_code
       edit if not File.exists? @file
       return if not File.exists? @file
-      
+
       file = File.read @file
 
-      begin 
+      begin
         ## first eval
         instance_eval file
-      rescue 
+      rescue
         puts "syntax error in " + @file.to_s
         edit
       end
 
-      
+
       remove_input_output file
-      
+
       output_list.each do |output_name|
         file.gsub! parsed_name(output_name), long_name(output_name)
       end
-      
+
       input_list.each do |input_name|
         file.gsub! parsed_name(input_name), long_name(input_name)
       end
-      
+
       puts file
       instance_eval file
 
       if defined? create
         @data = {}
-        create 
+        create
       end
-      
+
     end
 
     def remove_input_output(file)
@@ -431,17 +431,17 @@ module MSSP
 
       @room.remove self
 
-      # puts @cp5.getAll
-      @cp5.getAll.each do |controller| 
-        @cp5.remove controller
+      # puts @skatolo.getAll
+      @skatolo.getAll.each do |controller|
+        @skatolo.remove controller
       end
-      @cp5.delete
-      @cp5 = nil
+      @skatolo.delete
+      @skatolo = nil
       puts "Delete ended. "
     end
 
 
-    
+
     def create_data (value, name)
       data = {}
       data[name] = value
@@ -453,10 +453,10 @@ module MSSP
     def getGraphics
       @room.getGraphics
     end
-    
+
     Boite.become_java!
 
-  end 
+  end
 
 
 end
