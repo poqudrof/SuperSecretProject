@@ -12,7 +12,7 @@ class Room
 
   def initialize (applet, width, height)
     @applet, @width, @height = applet, width, height
-    @graphics = @applet.createGraphics(@width, @height, OPENGL)
+    @graphics = @applet.createGraphics(@width, @height)
 
     @boites = []
     @links = []
@@ -60,6 +60,9 @@ class Room
     @graphics.strokeWeight 1
 
     @links.each do |link|
+      @graphics.strokeWeight 1
+      bold = link.check_click @applet.mouse_x, @applet.mouse_y
+      @graphics.strokeWeight 2 if bold
       link.draw @graphics
     end
 
@@ -74,8 +77,7 @@ class Room
 
   end
 
-
-  def mouse_pressed
+  def mouse_pressed(args)
     @links.each do |link|
       selected = link.check_click @applet.mouse_x, @applet.mouse_y
 
@@ -136,7 +138,6 @@ class Room
   def remove_boite
     @skatolo.remove "boite"
     @text_field = nil
-
   end
 
 

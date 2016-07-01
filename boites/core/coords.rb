@@ -3,8 +3,6 @@ def output
 end
 
 def create
-	@data = {}
 	x = 400
 	y = 200
-end	
-
+end

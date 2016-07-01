@@ -7,15 +7,11 @@ def input
 end
 
 def create
-  @data = {}
   @my_slider = @skatolo.addSlider("slider")
     .setLabel("")
     .setSize(80, 10)
-
   @skatolo.update
-
   value = slider_value
-  @data
 end
 
 def update
@@ -29,5 +25,4 @@ end
 
 def apply
   value = slider_value
-  # puts "apply in slider ?!"
 end

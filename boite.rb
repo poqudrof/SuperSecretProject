@@ -47,6 +47,10 @@ module MSSP
 
       @skatolo = Skatolo.new @applet, self
 
+      # check if code exists
+      puts "No file, we create it."
+      edit if not File.exists? @file
+
       load_code
 
       #      @skatolo.setGraphics @room.getGraphics
@@ -65,10 +69,10 @@ module MSSP
         .setSize(13, 10)
 
       if can_create?
-        @creation_bang = @skatolo.addButton("create")
+        @create_button = @skatolo.addButton("create_button")
           .setLabel("create")
           .setSize(40, 10)
-        tooltip "create", "create data"
+        tooltip "create_button", "create data"
       end
 
       if has_input?
@@ -103,9 +107,6 @@ module MSSP
         input_bang = InputBang.new self, name, controller, index
 
     end
-
-
-
 
     def input_bang_multi_input
       puts "bang in multi_input"
@@ -161,13 +162,13 @@ module MSSP
 
 
     def translation_at_mouse
-      @location.x, @location.y = @applet.mouseX, @applet.mouseY
+      @location.x, @location.y = @applet.mouseX - 50, @applet.mouseY
     end
 
     def update_graphics
       update_common
 
-      update_create if can_create? and @creation_bang != nil
+      update_create if can_create? and @create_button != nil
       update_has_input if has_input? and @input_bangs != nil
       update_with_data if has_data?
 #      update_bang if is_a_bang?
@@ -180,7 +181,7 @@ module MSSP
     end
 
     def update_create
-      @creation_bang.setPosition(@location.x + 60, @location.y )
+      @create_button.setPosition(@location.x + 60, @location.y )
     end
 
     def update_has_input
@@ -227,7 +228,11 @@ module MSSP
         return if not has_all
       end
 
-      apply
+      begin
+        apply
+      rescue
+        p "error"
+      end
 
       # propagate
       @out_links.each { |boite| boite.bang }
@@ -365,42 +370,38 @@ module MSSP
     def update ; bang ; end
     def apply ; end
 
-
     ## Code related methods
-
     def load_code
-      edit if not File.exists? @file
       return if not File.exists? @file
 
       file = File.read @file
-
       begin
         ## first eval
         instance_eval file
       rescue
         puts "syntax error in " + @file.to_s
-        edit
+        edit nil
       end
 
-
+      ## Remove the input and output functions, fills the in/output_list
       remove_input_output file
 
+      ## Replace output with data access
       output_list.each do |output_name|
         file.gsub! parsed_name(output_name), long_name(output_name)
       end
 
+      ## Replace input with data access
       input_list.each do |input_name|
         file.gsub! parsed_name(input_name), long_name(input_name)
       end
 
-      puts file
       instance_eval file
 
       if defined? create
         @data = {}
-        create
+        #create
       end
-
     end
 
     def remove_input_output(file)
@@ -421,14 +422,20 @@ module MSSP
 #      s.replace "world"   #=> "world"
     end
 
+    def create_button
+      p caller
+      # p @create_button.isPressed.to_s
+      p @create_button.get_value.to_s
+      create
+    end
 
     def edit
-      %x( scite #{@file} )
+      %x( nohup scite #{@file} & )
+      return if not File.exists? @file
       load_code
     end
 
     def delete
-
       @room.remove self
 
       # puts @skatolo.getAll
@@ -440,14 +447,11 @@ module MSSP
       puts "Delete ended. "
     end
 
-
-
     def create_data (value, name)
       data = {}
       data[name] = value
       data
     end
-
 
     java_signature 'processing.core.PGraphics getGraphics()'
     def getGraphics
@@ -455,7 +459,6 @@ module MSSP
     end
 
     Boite.become_java!
-
   end
 
 

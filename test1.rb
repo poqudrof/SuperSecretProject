@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-require 'ruby-processing'
 require 'jruby_art'
 require 'jruby_art/app'
 
@@ -13,6 +12,7 @@ require 'jruby/core_ext'
 require './skatolo'
 require './boite'
 require './room'
+require './window'
 
 class MyApp < Processing::App
 
@@ -21,7 +21,7 @@ class MyApp < Processing::App
   end
 
   def settings
-    size 800, 800, P3D
+    size 800, 800, OPENGL
   end
 
   def setup
@@ -36,8 +36,8 @@ class MyApp < Processing::App
     image(@room.graphics, 0, 0, 800, 800)
   end
 
-  def mouse_pressed
-    @room.mouse_pressed
+  def mouse_pressed(*args)
+    @room.mouse_pressed args
   end
 
 end

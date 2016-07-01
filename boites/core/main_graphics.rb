@@ -1,11 +1,8 @@
-def create 
-  @data = {}
-  @data["graphics"] =@applet.g
-  @data["toto"] = "Toto value"
-  @data
+def create
+  graphics=@applet.g
+  toto = "Toto value"
 end
 
 def output
   "graphics,toto"
 end
-

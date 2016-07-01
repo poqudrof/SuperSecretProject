@@ -1,3 +1,0 @@
-def input 
-	"miaou" 
-end	
