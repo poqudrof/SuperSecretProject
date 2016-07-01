@@ -43,6 +43,7 @@ module MSSP
       @out_links = []
       @input_space = 13
 
+      @error = 0
       @location = Vec2D.new 100, 100
 
       @skatolo = Skatolo.new @applet, self
@@ -229,9 +230,11 @@ module MSSP
       end
 
       begin
+        @error = 0
         apply
       rescue
         p "error"
+        @error = color 255, 200, 0
       end
 
       # propagate
@@ -352,7 +355,7 @@ module MSSP
       graphics.translate @location.x, @location.y
 
       graphics.noStroke
-      graphics.fill 0
+      graphics.fill @error
       graphics.rect(0, 0, 50, 20)
 
       graphics.translate(0, - 5)
