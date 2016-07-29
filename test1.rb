@@ -8,6 +8,7 @@ require 'jruby/core_ext'
 # Processing::Runner
 # Dir["#{Processing::RP_CONFIG['PROCESSING_ROOT']}/core/library/\*.jar"].each{ |jar| require jar }
 # Processing::App::SKETCH_PATH = __FILE__   unless defined? Processing::App::SKETCH_PATH
+require 'osc-ruby'
 
 require './skatolo'
 require './boite'
