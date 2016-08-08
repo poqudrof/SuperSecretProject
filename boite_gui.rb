@@ -101,9 +101,11 @@ module MSSP
       @activation_bang.setPosition(@location.x, @location.y)
     end
 
-    def delete
-      @room.remove self
-      # puts @skatolo.getAll
+    def output_bang
+      @room.begin_link = self
+    end
+
+    def delete_gui
       @skatolo.getAll.each do |controller|
         @skatolo.remove controller
       end

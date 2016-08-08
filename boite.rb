@@ -23,10 +23,10 @@ module MSSP
     def initialize(name, applet, room)
       @name, @applet, @room = name, applet, room
 
+      @deleting = false
       @id = rand(36**8).to_s(36)
       @file = "boites/core/" + @name + ".rb"
 
-      @links = {}
       @out_links = []
       @error = 0
       @location = Vec2D.new 100, 100
@@ -40,8 +40,9 @@ module MSSP
       edit if not File.exists? @file
       load_code
 
+      @input_bangs = {}
+
       if has_input?
-        @input_bangs = {}
 
         multi_input = InputBang.new self, "multi_input", -1
         @input_bangs["multi_input"] = multi_input
@@ -60,22 +61,15 @@ module MSSP
       end
     end
 
+    #### Create a link.
+    ## Activated by the GUI
     def input_bang_multi_input
       puts "bang in multi_input"
       return if @room.begin_link == nil
 
-      input_bang = @input_bangs["multi_input"]
+      add_multi_input @room.begin_link
 
-      link = Link.new @room.begin_link, self, input_bang, -1
-      link.bang = @room.begin_link.is_a_bang?
-
-      ## add the input...
-      input_bang.sources << @room.begin_link
-
-      ## store the link
-      @links[input_bang.name] = link
-
-      @room.add_link(link, self)
+      create_add_link(@room.begin_link, @input_bangs["multi_input"])
     end
 
 
@@ -90,39 +84,50 @@ module MSSP
         return if @room.begin_link == nil
         return if @room.begin_link.is_a_bang?
 
-        link = Link.new @room.begin_link, self, input_bang, input_bang.index
+        clear_input_bang_links input_bang
 
-        ## simple link
-        link.transmitted_values << input_bang.name
+        # add the input.
+        add_single_input input_bang, @room.begin_link
 
-        clear_prev_link(input_bang)
-
-        input_bang.fill_with @room.begin_link
-
-        ## store the link
-        @links[input_bang.name] = link
-
-        @room.add_link(link, self)
+        # create and add the link
+        create_add_link(@room.begin_link, input_bang)
       end
-
     end
 
-    def clear_prev_link(input_bang)
-      prev_link = @links[input_bang.name]
-      @room.delete_link prev_link if prev_link != nil
+    # clear the previous link(s)
+    def clear_input_bang_links input_bang
+      input_bang.links.each { |link| @room.delete_link link }
+    end
+
+    ## Inputs are stored inside the input_bangs.
+    def add_single_input input_bang, begin_link
+      input_bang.fill_with begin_link
+      begin_link.out_links << input_bang
+    end
+
+    ## Inputs are stored inside the input_bangs.
+    def add_multi_input begin_link
+      @input_bangs["multi_input"].sources << begin_link
+      begin_link.out_links << @input_bangs["multi_input"]
+    end
+
+    def create_add_link begin_link, input_bang
+      link = Link.new begin_link, self, input_bang
+      link.bang = begin_link.is_a_bang?
+      @room.add_link(link, self)
+      input_bang.links << link
     end
 
 
-    def translation_at_mouse
-      @location.x, @location.y = @applet.mouseX - 50, @applet.mouseY
-    end
 
+    #################
     ## Code execution
     def bang
+      return if @deleting
 
       ## propagate bangs only
       if is_a_bang?
-        @out_links.each { |boite| boite.bang }
+        bang_on_output
         return
       end
 
@@ -135,7 +140,6 @@ module MSSP
         return if not has_all
       end
 
-
       begin
         @error = 0
         apply
@@ -146,17 +150,22 @@ module MSSP
       end
 
       # propagate
-      @out_links.each { |boite| boite.bang }
+      bang_on_output
+    end
+
+    def bang_on_output
+      boites = @out_links.collect {|input_bang| input_bang.boite }
+      boites.uniq.each { |boite| boite.bang }
     end
 
 
     def load_inputs
+      return if @deleting
 
       ## load all the data from the multi-input
       @input_bangs["multi_input"].sources.each do |input_boite|
 
 #        next if not input_boite.has_output?
-
         if input_boite.has_output?
           input_boite.output.split(",").each do |value_name|
             @data[value_name] = input_boite.data[value_name]
@@ -199,18 +208,37 @@ module MSSP
       true
     end
 
-    def check_plugged_input name ; @input_bangs[name].is_filled? ; end
-    def input_boite name ; @input_bangs[name].source ; end
-    def input_boite_outputs name ; @input_bangs[name].source.output ; end
 
-    def output_bang
-      @room.begin_link = self
+    def delete
+      @room.remove self
+      @deleting = true
+
+      @input_bangs.each_value do |input_bang|
+        clear_input_bang_links input_bang
+      end
+
+      ## delete the output
+      @out_links.each do |input_bang|
+        clear_input_bang_links input_bang
+      end
+
+      ## remove the input links and output links
+      delete_gui if room_gui_loaded?
+
+      if @room.begin_link == self
+        @room.begin_link = nil
+      end
+      ## clear the data structures
+      # @out_links = nil
+      # @input_bangs = nil
     end
 
     def remove_input link, boite
-      ## multi-input link.
+      ## if multi-input link.
       if link.input_bang == @input_bangs["multi_input"]
-        link.input_bang.sources.delete(boite)
+        link.input_bang.sources.delete_if do |source|
+          source == boite
+        end
       else
         ## simple link..
         link.input_bang.unfill
@@ -218,7 +246,9 @@ module MSSP
     end
 
     def remove_output link, boite
-      @out_links.delete boite
+      @out_links.delete_if do |input_bang|
+        input_bang.boite == boite
+      end
     end
 
     def get_binding ; binding ; end
@@ -233,6 +263,9 @@ module MSSP
     def is_a_bang? ; @bang != nil ; end
     def is_a_bang ; @bang = true ; end
     def room_gui_loaded? ; defined? Boite::room_gui_loaded ; end
+    def check_plugged_input name ; @input_bangs[name].is_filled? ; end
+    def input_boite name ; @input_bangs[name].source ; end
+    def input_boite_outputs name ; @input_bangs[name].source.output ; end
 
     def input_list
       return [] if not has_input?
@@ -259,6 +292,10 @@ module MSSP
       end
 
       update
+    end
+
+    def translation_at_mouse
+      @location.x, @location.y = @applet.mouseX - 50, @applet.mouseY
     end
 
     ## Draw common elements to all boites.
@@ -341,7 +378,6 @@ module MSSP
       create
     end
 
-
     def edit
       puts "In EDIT"
       %x( nohup scite #{@file} & )
@@ -349,7 +385,6 @@ module MSSP
       load_code
       puts "out EDIT"
     end
-
 
     def create_data (value, name)
       data = {}

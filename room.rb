@@ -41,15 +41,11 @@ module MSSP
     end
 
     def draw
-
-
       @graphics.beginDraw
       @graphics.background 55, 0, 0
 
       @boites.each do |boite|
         boite.global_draw @graphics
-        # @boites.each { |boite| boite.update_global }
-#        boite.update_global
       end
 
       draw_links
@@ -74,29 +70,34 @@ module MSSP
         @graphics.fill 0
         @graphics.stroke 255
         @graphics.strokeWeight 1
-        @graphics.line @begin_link.location.x, @begin_link.location.y, @applet.mouse_x, @applet.mouse_y
+        @graphics.line(@begin_link.location.x + 5,
+                       @begin_link.location.y + 20 + 5,
+                       @applet.mouse_x,
+                       @applet.mouse_y)
       end
     end
 
     def mouse_pressed(args)
       @links.each do |link|
         selected = link.check_click @applet.mouse_x, @applet.mouse_y
-
         if selected
           delete_link link
         end
       end
 
-      if(@applet.mouseEvent != nil and @applet.mouseEvent.getClickCount == 2)
+      if mouseButton == Processing::Proxy::RIGHT
+        @begin_link = nil if @begin_link != nil
+      end
 
+      if(@applet.mouseEvent != nil and @applet.mouseEvent.getClickCount == 2)
         if @text_field == nil
           @text_field = @skatolo.addTextfield("boite")
                         .setPosition(mouse_x, mouse_y)
                         .setSize(150, 20)
+          puts "add text_field"
           @skatolo.update
         end
       end
-
     end
 
 
@@ -104,9 +105,7 @@ module MSSP
       @boites.delete boite
     end
 
-
     def boite name
-
       if name == ""
         remove_boite
         return
@@ -146,7 +145,6 @@ module MSSP
     end
 
     def add_link(link, boite)
-      @begin_link.out_links << boite
       @links << link
       @begin_link = nil
     end
@@ -160,7 +158,6 @@ module MSSP
     def mousePressed
       mouse_pressed
     end
-
 
     Room.become_java!
   end
