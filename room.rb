@@ -21,10 +21,8 @@ class Room
     @skatolo = Skatolo.new @applet, self
     @applet.registerMethod("mousePressed", self)
 
-
     @boite_rect = Boite.new "rect", @applet, self
     @boite_graphics = Boite.new "current_graphics", @applet, self
-
     @boite_bang = Boite.new "bang", @applet, self
     @boite_always = Boite.new "always", @applet, self
 
@@ -41,24 +39,27 @@ class Room
     @to_delete = []
   end
 
-
   def draw
-
     @graphics.beginDraw
     @graphics.background 55, 0, 0
-
 
 #    todo : put list of functions
     @boites.each do |boite|
       boite.update_global
-      boite.update
+#     boite.update
       boite.global_draw @graphics
+#     boite.draw @graphics
     end
 
+    draw_links
+
+    @graphics.endDraw
+  end
+
+  def draw_links
     @graphics.fill 0
     @graphics.stroke 180
     @graphics.strokeWeight 1
-
     @links.each do |link|
       @graphics.strokeWeight 1
       bold = link.check_click @applet.mouse_x, @applet.mouse_y
@@ -72,9 +73,6 @@ class Room
       @graphics.strokeWeight 1
       @graphics.line @begin_link.location.x, @begin_link.location.y, @applet.mouse_x, @applet.mouse_y
     end
-
-    @graphics.endDraw
-
   end
 
   def mouse_pressed(args)
