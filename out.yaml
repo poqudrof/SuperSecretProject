@@ -1,0 +1,136 @@
+--- &1 !ruby/object:MSSP::Room
+links: []
+height: 800
+begin_link:
+boite_always: &2 !ruby/object:MSSP::Boite
+  room: *1
+  links: {}
+  input_space: 13
+  edit_button: !ruby/object:Java::FrInriaSkatoloGuiControllers::Button {}
+  applet: &4 !ruby/object:MyApp
+    height: 800
+    room: *1
+    width: 800
+    declared_fields:
+      key: !ruby/object:Java::JavaField {}
+      frameRate: !ruby/object:Java::JavaField {}
+      mousePressed: !ruby/object:Java::JavaField {}
+      keyPressed: !ruby/object:Java::JavaField {}
+    render_mode: processing.opengl.PGraphics3D
+  file: boites/core/always.rb
+  bang: true
+  out_links: []
+  delete_button: !ruby/object:Java::FrInriaSkatoloGuiControllers::Button {}
+  name: always
+  error: 0
+  id: q8vk5ocb
+  skatolo: &3 !ruby/object:Skatolo
+    events_object: *2
+    event_handler: !ruby/object:EventHandler
+      skatolo: *3
+    applet: *4
+  location_handle: !ruby/object:Java::FrInriaSkatoloGuiControllers::Button {}
+  location: !ruby/object:Vec2D {}
+applet: *4
+boite_bang: &5 !ruby/object:MSSP::Boite
+  room: *1
+  links: {}
+  input_space: 13
+  edit_button: !ruby/object:Java::FrInriaSkatoloGuiControllers::Button {}
+  applet: *4
+  file: boites/core/bang.rb
+  bang: true
+  out_links: []
+  delete_button: !ruby/object:Java::FrInriaSkatoloGuiControllers::Button {}
+  name: bang
+  error: 0
+  id: x1wva9we
+  skatolo: &6 !ruby/object:Skatolo
+    events_object: *5
+    event_handler: !ruby/object:EventHandler
+      skatolo: *6
+    applet: *4
+  location_handle: !ruby/object:Java::FrInriaSkatoloGuiControllers::Button {}
+  location: !ruby/object:Vec2D {}
+boites:
+- &7 !ruby/object:MSSP::Boite
+  room: *1
+  links: {}
+  input_space: 13
+  create_button: !ruby/object:Java::FrInriaSkatoloGuiControllers::Button {}
+  edit_button: !ruby/object:Java::FrInriaSkatoloGuiControllers::Button {}
+  applet: *4
+  file: boites/core/current_graphics.rb
+  output_bang: !ruby/object:Java::FrInriaSkatoloGuiControllers::Bang {}
+  out_links: []
+  delete_button: !ruby/object:Java::FrInriaSkatoloGuiControllers::Button {}
+  name: current_graphics
+  error: 0
+  id: 9run8dtx
+  skatolo: &8 !ruby/object:Skatolo
+    events_object: *7
+    event_handler: !ruby/object:EventHandler
+      skatolo: *8
+    applet: *4
+  location_handle: !ruby/object:Java::FrInriaSkatoloGuiControllers::Button {}
+  location: !ruby/object:Vec2D {}
+  data: {}
+- &9 !ruby/object:MSSP::Boite
+  room: *1
+  links: {}
+  input_space: 13
+  create_button: !ruby/object:Java::FrInriaSkatoloGuiControllers::Button {}
+  edit_button: !ruby/object:Java::FrInriaSkatoloGuiControllers::Button {}
+  input_bangs:
+    multi_input: !ruby/object:MSSP::InputBang
+      boite: *9
+      name: input_bang_multi_input
+      index: -1
+      controller: !ruby/object:Java::FrInriaSkatoloGuiControllers::Button {}
+      sources: []
+    graphics: !ruby/object:MSSP::InputBang
+      boite: *9
+      name: input_bang_graphics
+      index: 0
+      controller: !ruby/object:Java::FrInriaSkatoloGuiControllers::Button {}
+      sources: []
+    x: !ruby/object:MSSP::InputBang
+      boite: *9
+      name: input_bang_x
+      index: 1
+      controller: !ruby/object:Java::FrInriaSkatoloGuiControllers::Button {}
+      sources: []
+    y: !ruby/object:MSSP::InputBang
+      boite: *9
+      name: input_bang_y
+      index: 2
+      controller: !ruby/object:Java::FrInriaSkatoloGuiControllers::Button {}
+      sources: []
+  applet: *4
+  file: boites/core/rect.rb
+  output_bang: !ruby/object:Java::FrInriaSkatoloGuiControllers::Bang {}
+  out_links: []
+  delete_button: !ruby/object:Java::FrInriaSkatoloGuiControllers::Button {}
+  name: rect
+  error: 0
+  id: 61fajhvl
+  skatolo: &10 !ruby/object:Skatolo
+    events_object: *9
+    event_handler: !ruby/object:EventHandler
+      skatolo: *10
+    applet: *4
+  location_handle: !ruby/object:Java::FrInriaSkatoloGuiControllers::Button {}
+  location: !ruby/object:Vec2D {}
+  data: {}
+- *5
+- *2
+width: 800
+boite_graphics: *7
+graphics: !ruby/object:Java::ProcessingAwt::PGraphicsJava2D {}
+to_delete: []
+boite_rect: *9
+skatolo: &11 !ruby/object:Skatolo
+  events_object: *1
+  event_handler: !ruby/object:EventHandler
+    skatolo: *11
+  applet: *4

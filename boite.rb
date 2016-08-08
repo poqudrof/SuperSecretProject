@@ -1,35 +1,20 @@
 require 'ostruct'
 
 require './link'
-require './boite_graphics'
-
+require './input_bang'
+require './boite_gui'
 
 module MSSP
-
-  class InputBang
-    attr_reader :boite, :controller, :index
-    attr_reader :source, :name
-    attr_reader :sources
-
-    def initialize boite, name, controller, index
-      @boite, @name, @controller, @index = boite, name, controller, index
-      @sources = []
-    end
-
-    def controller_name ; "input_bang_" + @name ; end
-    def fill_with source; @source = source ; end
-    def is_filled? ; @source != nil ; end
-
-    def unfill ; @source = nil ; end
-
-    def self.controller_name(name) ; "input_bang_" + name ; end
-
-  end
 
   class Boite
 
     attr_reader :name, :location, :out_links, :data
-    attr_reader :input_space
+
+    def encode_with encoder
+      encoder['name'] = @name
+      encoder['location'] = @location
+      encoder['out_links'] = @out_links
+    end
 
     def create_method(name, &block)
       self.class.send(:define_method, name, &block)
@@ -43,11 +28,8 @@ module MSSP
 
       @links = {}
       @out_links = []
-      @input_space = 13
-
       @error = 0
       @location = Vec2D.new 100, 100
-
 
       if room_gui_loaded?
         init_gui
@@ -55,16 +37,28 @@ module MSSP
       end
 
       # check if code exists
-      puts "No file, we create it."
       edit if not File.exists? @file
       load_code
+
+      if has_input?
+        @input_bangs = {}
+
+        multi_input = InputBang.new self, "multi_input", -1
+        @input_bangs["multi_input"] = multi_input
+
+        ## define a bang for each input.
+        input_list.each_with_index do |input, index|
+          input_bang = InputBang.new self, input, index
+          @input_bangs[input] = input_bang
+          define_input_bang_method input_bang
+        end
+      end
 
       if room_gui_loaded?
         init_optional_buttons
         update_graphics
       end
     end
-
 
     def input_bang_multi_input
       puts "bang in multi_input"
@@ -90,7 +84,7 @@ module MSSP
     ## inputs cannot be : bangs.
     def define_input_bang_method(input_bang)
 
-      define_singleton_method(input_bang.name.to_sym) do
+      define_singleton_method(input_bang.controller_name.to_sym) do
         puts "bang in " + input_bang.name
 
         return if @room.begin_link == nil
@@ -141,12 +135,14 @@ module MSSP
         return if not has_all
       end
 
+
       begin
         @error = 0
         apply
       rescue
-        p "error"
-        @error = color 255, 200, 0
+        # p "error"
+        ## TODO: something better than this color stuff.
+        @error = $app.color 255, 200, 0
       end
 
       # propagate
@@ -342,16 +338,16 @@ module MSSP
     end
 
     def create_button
-      p caller
-      # p @create_button.isPressed.to_s
-      p @create_button.get_value.to_s
       create
     end
 
+
     def edit
+      puts "In EDIT"
       %x( nohup scite #{@file} & )
       return if not File.exists? @file
       load_code
+      puts "out EDIT"
     end
 
 

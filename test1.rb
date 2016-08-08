@@ -8,10 +8,10 @@ require 'jruby/core_ext'
 # Processing::Runner
 # Dir["#{Processing::RP_CONFIG['PROCESSING_ROOT']}/core/library/\*.jar"].each{ |jar| require jar }
 # Processing::App::SKETCH_PATH = __FILE__   unless defined? Processing::App::SKETCH_PATH
-require 'osc-ruby'
+
+# require 'osc-ruby'
 
 require './skatolo'
-require './boite'
 require './room'
 require './window'
 
@@ -25,16 +25,20 @@ class MyApp < Processing::App
     size 800, 800, OPENGL
   end
 
+
   def setup
-    @room = Room.new self, 800, 800
+    @room = MSSP::Room.new self, 800, 800
 
   end
-
 
   def draw
     background 100
     @room.draw
     image(@room.graphics, 0, 0, 800, 800)
+  end
+
+  def key_pressed(*keys)
+    # @room.test
   end
 
   def mouse_pressed(*args)

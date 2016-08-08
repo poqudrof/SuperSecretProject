@@ -2,9 +2,11 @@ module MSSP
 
   class Boite
 
+    attr_reader :input_space
     def self.room_gui_loaded ;  true ; end
 
     def init_gui
+      @input_space = 13
       @skatolo = Skatolo.new @applet, self
       @skatolo.setGraphics @room.getGraphics
       @skatolo.getTooltip.setDelay(200);
@@ -36,30 +38,22 @@ module MSSP
         tooltip "create_button", "create data"
       end
 
-      if has_input?
-        @input_bangs = {}
-
-        multi_input = create_input_bang "multi_input", -1
-        @input_bangs["multi_input"] = multi_input
-
-        ## define a bang for each input.
-        input_list.each_with_index do |input, index|
-
-          input_bang = create_input_bang input, index
-          @input_bangs[input] = input_bang
-          define_input_bang_method input_bang
+      if @input_bangs != nil
+        @input_bangs.each_value do |input_bang|
+          create_input_bang_graphics(input_bang)
         end
       end
+
       @skatolo.update
     end
 
-    def create_input_bang(input_name, index)
-      name = InputBang::controller_name input_name
-      controller = @skatolo.addButton(name)
+    def create_input_bang_graphics(input_bang)
+      controller = @skatolo.addButton(input_bang.controller_name)
                    .setLabel("")
                    .setSize(10, 10)
-      tooltip name, input_name
-      input_bang = InputBang.new self, name, controller, index
+      ## just the bang name as a tooltip
+      tooltip input_bang.controller_name, input_bang.name
+      input_bang.controller = controller
     end
 
     def update_graphics
@@ -115,7 +109,6 @@ module MSSP
       end
       @skatolo.delete
       @skatolo = nil
-      puts "Delete ended. "
     end
 
     def tooltip(name, text) ; @skatolo.getTooltip.register(name, text); end

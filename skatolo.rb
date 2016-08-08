@@ -7,7 +7,6 @@ Processing::App.load_library :skatolo
 # end
 
 class EventHandler
-  attr_reader :applet
 
   def initialize skatolo
     @skatolo = skatolo
@@ -29,11 +28,10 @@ class Skatolo < Java::FrInriaSkatolo::Skatolo
     @events_object = applet if events_object == nil
 
     super(applet, @event_handler)
-    @applet = applet
+#    @applet = applet
   end
 
   def update
-
     getAll.to_a.each do |controller|
       name = controller.name
       ## There is a method with this name...
@@ -43,7 +41,6 @@ class Skatolo < Java::FrInriaSkatolo::Skatolo
         create_getter_for name
         create_setter_for name
       end
-
     end
   end
 
@@ -53,6 +50,8 @@ class Skatolo < Java::FrInriaSkatolo::Skatolo
     name = controlEvent.getName
     value = controlEvent.getValue
     string_value = controlEvent.getStringValue
+
+#    puts controller.object_id.to_s
 
     ## There is a method with this name...
     if @events_object.respond_to? name
@@ -87,8 +86,6 @@ class Skatolo < Java::FrInriaSkatolo::Skatolo
     return if is_event_class controller.class
 
     value = get_controller_value(controller)
-
-#    puts "Creating a getter for " + name
 
     @events_object.create_method(name + "_value") do
       controller = @skatolo.get(name)
