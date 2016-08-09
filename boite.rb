@@ -40,6 +40,7 @@ module MSSP
       edit if not File.exists? @file
       load_code
 
+      @data = {}
       @input_bangs = {}
 
       if has_input?
@@ -118,8 +119,6 @@ module MSSP
       input_bang.links << link
     end
 
-
-
     #################
     ## Code execution
     def bang
@@ -127,16 +126,15 @@ module MSSP
 
       ## propagate bangs only
       if is_a_bang?
-        bang_on_output
+        bang_on_outputs
         return
       end
 
-      if @data == nil
-        @data = {}
-      end
 
       if has_input?
         has_all = load_inputs
+
+        @error = $app.color 150, 150, 2550 if not has_all
         return if not has_all
       end
 
@@ -150,10 +148,10 @@ module MSSP
       end
 
       # propagate
-      bang_on_output
+      bang_on_outputs
     end
 
-    def bang_on_output
+    def bang_on_outputs
       boites = @out_links.collect {|input_bang| input_bang.boite }
       boites.uniq.each { |boite| boite.bang }
     end
@@ -163,43 +161,43 @@ module MSSP
       return if @deleting
 
       ## load all the data from the multi-input
-      @input_bangs["multi_input"].sources.each do |input_boite|
+      @input_bangs["multi_input"].sources.each do |boite_src|
 
-#        next if not input_boite.has_output?
-        if input_boite.has_output?
-          input_boite.output.split(",").each do |value_name|
-            @data[value_name] = input_boite.data[value_name]
+        #        next if not boite_src.has_output?
+        if boite_src.has_output?
+          boite_src.output.split(",").each do |value_name|
+            @data[value_name] = boite_src.data[value_name]
           end
         else
           ## no declared output, get the hidden data...
-          if input_boite.data != nil && input_boite.data.class == Hash
+          if boite_src.data != nil && boite_src.data.class == Hash
 
-            @data.merge! input_boite.data
+            @data.merge! boite_src.data
           end
         end
       end
 
       ## load the data from the individual inputs
-      input_list.each do |input_name|
+      input_list().each do |input_name|
         # create the variable
 
         ## best case, the input is plugged in a slot.
         if check_plugged_input input_name
 
           ## all the data going in this input.
-          incoming_data = input_boite(input_name).data
+          incoming_data = boite_src(input_name).data
 
           ## if there is a corresponding data.
           if incoming_data[input_name] != nil
             @data[input_name] = incoming_data[input_name]
           else
             ## get the first value
-            first_output_name = input_boite_outputs(input_name).split(",").first
+            first_output_name = boite_src_outputs(input_name).split(",").first
             @data[input_name] = incoming_data[first_output_name]
           end
         else
           # the value is not plugged, look into the multi-input
-#          puts "missing " + input_name  if @data[input_name] == nil
+          #          puts "missing " + input_name  if @data[input_name] == nil
 
           return false if @data[input_name] == nil
         end
@@ -227,10 +225,10 @@ module MSSP
 
       if @room.begin_link == self
         @room.begin_link = nil
+        ## clear the data structures
+        # @out_links = nil
+        # @input_bangs = nil
       end
-      ## clear the data structures
-      # @out_links = nil
-      # @input_bangs = nil
     end
 
     def remove_input link, boite
@@ -264,8 +262,8 @@ module MSSP
     def is_a_bang ; @bang = true ; end
     def room_gui_loaded? ; defined? Boite::room_gui_loaded ; end
     def check_plugged_input name ; @input_bangs[name].is_filled? ; end
-    def input_boite name ; @input_bangs[name].source ; end
-    def input_boite_outputs name ; @input_bangs[name].source.output ; end
+    def boite_src name ; @input_bangs[name].source ; end
+    def boite_src_outputs name ; @input_bangs[name].source.output ; end
 
     def input_list
       return [] if not has_input?
@@ -278,7 +276,6 @@ module MSSP
     end
 
     def output_created_values ; has_output? ? output : "Forward data";  end
-
 
     def update_global
       if room_gui_loaded?
@@ -350,10 +347,6 @@ module MSSP
 
       instance_eval file
 
-      if defined? create
-        @data = {}
-        #create
-      end
     end
 
     def remove_input_output(file)
@@ -371,7 +364,7 @@ module MSSP
 
 
     def parse_file file
-#      s.replace "world"   #=> "world"
+      #      s.replace "world"   #=> "world"
     end
 
     def create_button
@@ -379,11 +372,9 @@ module MSSP
     end
 
     def edit
-      puts "In EDIT"
       %x( nohup scite #{@file} & )
       return if not File.exists? @file
       load_code
-      puts "out EDIT"
     end
 
     def create_data (value, name)
@@ -399,6 +390,5 @@ module MSSP
 
     Boite.become_java!
   end
-
 
 end

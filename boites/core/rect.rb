@@ -5,10 +5,9 @@ end
 def update ; bang ; end
 
 def create
-	puts "Create in rect!!!"
-	x = 150
-	y = 100
-	graphics = @room.getGraphics
+  x = 150
+  y = 100
+  graphics = @room.getGraphics
 end
 
 def apply
