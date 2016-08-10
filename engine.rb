@@ -67,9 +67,15 @@ module MSSP
       test_save 'test3.yaml', out
     end
 
-    def test_reload other_room
+    def load file_name
+      file = File.read(file_name)
+      other_boites = YAML.load(file)
+      other_boites.each_value {|b| add b}
+    end
+
+    def test_reload other_boites
       remove_all
-      other_room.each_value {|b| add b}
+      other_boites.each_value {|b| add b}
     end
 
     def test_save name, room

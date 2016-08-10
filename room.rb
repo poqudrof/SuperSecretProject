@@ -27,20 +27,20 @@ module MSSP
       @skatolo = Skatolo.new @applet, self
       @applet.registerMethod("mousePressed", self)
 
-      @boite_rect = Boite.new "rect", @applet, self
-      @boite_graphics = Boite.new "current_graphics", @applet, self
-      @boite_bang = Boite.new "bang", @applet, self
-      @boite_always = Boite.new "always", @applet, self
+      # @boite_rect = Boite.new "rect", @applet, self
+      # @boite_graphics = Boite.new "current_graphics", @applet, self
+      # @boite_bang = Boite.new "bang", @applet, self
+      # @boite_always = Boite.new "always", @applet, self
 
-      add @boite_graphics
-      add @boite_rect
-      add @boite_bang
-      add @boite_always
+      # add @boite_graphics
+      # add @boite_rect
+      # add @boite_bang
+      # add @boite_always
 
-      @boite_rect.location.x = 300
-      @boite_bang.location.y = 300
-      @boite_always.location.y = 300
-      @boite_always.location.x = 300
+      # @boite_rect.location.x = 300
+      # @boite_bang.location.y = 300
+      # @boite_always.location.y = 300
+      # @boite_always.location.x = 300
 
       @to_delete = []
     end
