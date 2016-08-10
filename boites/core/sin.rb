@@ -1,5 +1,5 @@
 def output
-	"x"
+  "x"
 end
 
 def create

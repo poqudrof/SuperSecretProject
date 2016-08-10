@@ -4,47 +4,105 @@ require './link'
 require './input_bang'
 require './boite_gui'
 
+## Here to save the location
+class Vec2D
+  def encode_with encoder
+    encoder['x'] = self.x
+    encoder['y'] = self.y
+  end
+
+  def init_with coder
+    self.x = coder['x']
+    self.y = coder['y']
+  end
+end
+
 module MSSP
 
   class Boite
 
-    attr_reader :name, :location, :out_links, :data
+    attr_reader :name, :location, :out_links, :data, :id
 
     def encode_with encoder
       encoder['name'] = @name
+      # encoder['custom'] = @is_custom
       encoder['location'] = @location
+      encoder['internal_data'] = @internal_data
+      encoder['id'] = @id
       encoder['out_links'] = @out_links
+      encoder['input_bangs'] = @input_bangs
+    end
+
+    def init_with coder
+      puts "In coder !"
+
+      # encoder['custom'] = @is_custom
+      # encoder['location'] = @location
+
+      @id = coder['id']
+      @name = coder['name']
+      @location = coder['location']
+      @internal_data = coder['internal_data']
+      @out_links = coder['out_links']
+      @input_bangs = coder['input_bangs']
+      init true
     end
 
     def create_method(name, &block)
       self.class.send(:define_method, name, &block)
     end
 
-    def initialize(name, applet, room)
-      @name, @applet, @room = name, applet, room
+    def init deserialize
+      @room = $engine
+      @applet = $app if deserialize
 
       @deleting = false
-      @id = rand(36**8).to_s(36)
-      @file = "boites/core/" + @name + ".rb"
-
-      @out_links = []
+      @file, @is_custom = @room.find_file @name
       @error = 0
-      @location = Vec2D.new 100, 100
+      @data = {}
 
-      if room_gui_loaded?
-        init_gui
-        init_default_buttons
+      init_gui if room_gui_loaded?
+
+      if not deserialize
+        edit if not File.exists? @file
       end
 
-      # check if code exists
-      edit if not File.exists? @file
       load_code
 
-      @data = {}
+      create_input_bangs unless deserialize
+      define_input_bangs
+
+      if room_gui_loaded?
+        init_default_buttons
+        init_optional_buttons
+        update_graphics
+      end
+    end
+
+    def initialize(name, applet, room)
+      @name, @applet, @room = name, applet, room
+      @id = rand(36**8).to_s(36)
+
+      @location = Vec2D.new 100, 100
+      @out_links = []
       @input_bangs = {}
+      @data = {}
 
+      init false
+    end
+
+    def define_input_bangs
+      input_list.each_with_index do |input, index|
+        if @input_bangs[input] != nil
+          define_input_bang_method @input_bangs[input]
+        else
+          puts "No input Bang " + input
+        end
+      end
+    end
+
+    def create_input_bangs
       if has_input?
-
         multi_input = InputBang.new self, "multi_input", -1
         @input_bangs["multi_input"] = multi_input
 
@@ -52,13 +110,7 @@ module MSSP
         input_list.each_with_index do |input, index|
           input_bang = InputBang.new self, input, index
           @input_bangs[input] = input_bang
-          define_input_bang_method input_bang
         end
-      end
-
-      if room_gui_loaded?
-        init_optional_buttons
-        update_graphics
       end
     end
 
@@ -73,13 +125,12 @@ module MSSP
       create_add_link(@room.begin_link, @input_bangs["multi_input"])
     end
 
-
-
     ## inputs can be values, from multiple output.
     ## inputs cannot be : bangs.
     def define_input_bang_method(input_bang)
 
       define_singleton_method(input_bang.controller_name.to_sym) do
+        puts "here define..."
         puts "bang in " + input_bang.name
 
         return if @room.begin_link == nil
@@ -97,7 +148,7 @@ module MSSP
 
     # clear the previous link(s)
     def clear_input_bang_links input_bang
-      input_bang.links.each { |link| @room.delete_link link }
+      input_bang.links.each { |link| link.delete }
     end
 
     ## Inputs are stored inside the input_bangs.
@@ -108,14 +159,14 @@ module MSSP
 
     ## Inputs are stored inside the input_bangs.
     def add_multi_input begin_link
-      @input_bangs["multi_input"].sources << begin_link
+      @input_bangs["multi_input"].sources << begin_link.id
       begin_link.out_links << @input_bangs["multi_input"]
     end
 
     def create_add_link begin_link, input_bang
       link = Link.new begin_link, self, input_bang
       link.bang = begin_link.is_a_bang?
-      @room.add_link(link, self)
+      @room.begin_link = nil
       input_bang.links << link
     end
 
@@ -211,14 +262,17 @@ module MSSP
       @room.remove self
       @deleting = true
 
+      puts "delete input_bangs"
       @input_bangs.each_value do |input_bang|
         clear_input_bang_links input_bang
       end
 
+      puts "delete out_links"
       ## delete the output
       @out_links.each do |input_bang|
         clear_input_bang_links input_bang
       end
+
 
       ## remove the input links and output links
       delete_gui if room_gui_loaded?
@@ -283,11 +337,6 @@ module MSSP
         translation_at_mouse if @location_handle.is_pressed
       end
 
-      ## TODO: change this always stuff to somewhere else
-      if @name == "always"
-        bang
-      end
-
       update
     end
 
@@ -324,6 +373,8 @@ module MSSP
       return if not File.exists? @file
 
       file = File.read @file
+
+      ## Why first eval ?
       begin
         ## first eval
         instance_eval file
@@ -363,13 +414,7 @@ module MSSP
     end
 
 
-    def parse_file file
-      #      s.replace "world"   #=> "world"
-    end
-
-    def create_button
-      create
-    end
+    def create_button ; create ; end
 
     def edit
       %x( nohup scite #{@file} & )
@@ -377,11 +422,6 @@ module MSSP
       load_code
     end
 
-    def create_data (value, name)
-      data = {}
-      data[name] = value
-      data
-    end
 
     java_signature 'processing.core.PGraphics getGraphics()'
     def getGraphics

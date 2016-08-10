@@ -1,6 +1,5 @@
 def create 
-  @data["graphics"] = @room.getGraphics
-  @data
+  graphics = @room.getGraphics
 end
 
 def output

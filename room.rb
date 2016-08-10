@@ -13,11 +13,16 @@ module MSSP
     end
 
     def initialize (applet, width, height)
-      super()
+
+      lib = $app.sketchPath + "/boites/"
+      work = $app.sketchPath + "/test/"
+
+      super(work, lib)
       @applet, @width, @height = applet, width, height
       @graphics = @applet.createGraphics(@width, @height)
 
       @begin_link = nil
+      @links = []
 
       @skatolo = Skatolo.new @applet, self
       @applet.registerMethod("mousePressed", self)
@@ -27,10 +32,10 @@ module MSSP
       @boite_bang = Boite.new "bang", @applet, self
       @boite_always = Boite.new "always", @applet, self
 
-      @boites << @boite_graphics
-      @boites << @boite_rect
-      @boites << @boite_bang
-      @boites << @boite_always
+      add @boite_graphics
+      add @boite_rect
+      add @boite_bang
+      add @boite_always
 
       @boite_rect.location.x = 300
       @boite_bang.location.y = 300
@@ -44,7 +49,7 @@ module MSSP
       @graphics.beginDraw
       @graphics.background 55, 0, 0
 
-      @boites.each do |boite|
+      @boites.each_value do |boite|
         boite.global_draw @graphics
       end
 
@@ -59,11 +64,19 @@ module MSSP
       @graphics.fill 0
       @graphics.stroke 180
       @graphics.strokeWeight 1
-      @links.each do |link|
-        @graphics.strokeWeight 1
-        bold = link.check_click @applet.mouse_x, @applet.mouse_y
-        @graphics.strokeWeight 2 if bold
-        link.draw @graphics
+
+      @boites.each_value do |boite|
+
+        puts "links " + boite.out_links.size.to_s
+        boite.out_links.each do |input_bang|
+          input_bang.links.each do |link|
+
+            @graphics.strokeWeight 1
+            bold = link.check_click @applet.mouse_x, @applet.mouse_y
+            @graphics.strokeWeight 2 if bold
+            link.draw @graphics
+          end
+        end
       end
 
       if @begin_link != nil
@@ -78,10 +91,14 @@ module MSSP
     end
 
     def mouse_pressed(args)
-      @links.each do |link|
-        selected = link.check_click @applet.mouse_x, @applet.mouse_y
-        if selected
-          delete_link link
+      @boites.each_value do |boite|
+        boite.out_links do |link|
+
+#      @links.each do |link|
+          selected = link.check_click @applet.mouse_x, @applet.mouse_y
+          if selected
+            link.delete
+          end
         end
       end
 
@@ -101,10 +118,6 @@ module MSSP
     end
 
 
-    def remove boite
-      @boites.delete boite
-    end
-
     def boite name
       if name == ""
         remove_boite
@@ -114,18 +127,18 @@ module MSSP
       if is_a_number name
         boite = Boite.new "number", @applet, self
         boite.set_value name.to_f
-        add_boite boite
+        add_created_boite boite
         return
       end
 
       boite = Boite.new boite_value, @applet, self
-      add_boite boite
+      add_created_boite boite
     end
 
-    def add_boite boite
+    def add_created_boite boite
       boite.location.x = @text_field.position.x
       boite.location.y = @text_field.position.y
-      @boites << boite
+      @boites[boite.id] = boite
       remove_boite
     end
 
@@ -136,17 +149,6 @@ module MSSP
     def remove_boite
       @skatolo.remove "boite"
       @text_field = nil
-    end
-
-
-    def delete_link link
-      @links.delete link
-      link.delete
-    end
-
-    def add_link(link, boite)
-      @links << link
-      @begin_link = nil
     end
 
     java_signature 'processing.core.PGraphics getGraphics()'

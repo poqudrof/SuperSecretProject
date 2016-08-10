@@ -1,12 +1,14 @@
 module MSSP
 
   class Link
+    include MSSP
+
     attr_reader :in_boite, :out_boite, :input_bang
     attr_accessor :bang
 
     def initialize(begin_element, end_element, input_bang)
-      @out_boite = begin_element
-      @in_boite = end_element
+      @out_boite = begin_element.id
+      @in_boite = end_element.id
 
       @in_boite_index = input_bang.index
 
@@ -14,27 +16,32 @@ module MSSP
       @bang = false
     end
 
+    def encode_with encoder
+      encoder['out_boite'] = @out_boite
+      encoder['in_boite'] = @in_boite
+      encoder['in_boite_index'] = @in_boite_index
+      encoder['bang'] = @bang
+    end
+
+
     def draw(graphics)
-
       graphics.fill(245,27,27) if @bang
-
-      input_offset = @in_boite_index * @in_boite.input_space
+      input_offset = @in_boite_index * from_engine(@in_boite).input_space
       input = input_location
       output = output_location
-
       graphics.line(input.x, input.y,
                     output.x, output.y)
     end
 
     def input_location
-      input_offset = @in_boite_index * @in_boite.input_space
-      Vec2D.new(@in_boite.location.x + input_offset,
-                @in_boite.location.y)
+      input_offset = @in_boite_index * from_engine(@in_boite).input_space
+      Vec2D.new(from_engine(@in_boite).location.x + input_offset,
+                from_engine(@in_boite).location.y)
     end
 
     def output_location
-      Vec2D.new(@out_boite.location.x + 5,
-                @out_boite.location.y + 20 + 5)
+      Vec2D.new(from_engine(@out_boite).location.x + 5,
+                from_engine(@out_boite).location.y + 20 + 5)
     end
 
     def check_click(x,y)
@@ -53,11 +60,11 @@ module MSSP
     end
 
     def delete
-      puts " deleting " + self.to_s
+      puts " deleting link " + self.to_s
       # @out_boite.remove_input @in_boite
       # @in_boite.remove_output @out_boite
-      @in_boite.remove_input self, @out_boite
-      @out_boite.remove_output self, @in_boite
+      from_engine(@in_boite).remove_input self, from_engine(@out_boite)
+      from_engine(@out_boite).remove_output self, from_engine(@in_boite)
     end
 
   end

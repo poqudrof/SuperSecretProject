@@ -20,7 +20,7 @@ module MSSP
     end
 
     def draw
-      background 200
+      background 40, 40, 180
       # puts "draw!"
     end
 

@@ -15,7 +15,6 @@ class EventHandler
   java_signature 'void controlEvent(fr.inria.skatolo.events.ControlEvent)'
   def controlEvent(controlEvent)
     @skatolo.send_event_to_sketch controlEvent
-    puts "Event ! " + controlEvent.to_s
   end
 
   EventHandler.become_java!
