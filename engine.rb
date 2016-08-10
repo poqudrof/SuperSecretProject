@@ -1,6 +1,9 @@
 require 'yaml'
 
 module MSSP
+
+  def from_engine boite ; $engine.boites[boite] ; end
+
   class Engine
     attr_reader :links, :boites
     attr_reader :working_directory, :library_directory
@@ -41,6 +44,10 @@ module MSSP
     def remove_all
       @boites.each_value do |boite|
         boite.delete
+      end
+
+      @boites.each_value do |boite|
+        remove boite
       end
     end
 

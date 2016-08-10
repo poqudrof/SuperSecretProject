@@ -22,6 +22,7 @@ module MSSP
   class Boite
 
     attr_reader :name, :location, :out_links, :data, :id
+    attr_reader :deleting
 
     def encode_with encoder
       encoder['name'] = @name
@@ -257,9 +258,7 @@ module MSSP
       true
     end
 
-
     def delete
-      @room.remove self
       @deleting = true
 
       puts "delete input_bangs"
@@ -272,7 +271,6 @@ module MSSP
       @out_links.each do |input_bang|
         clear_input_bang_links input_bang
       end
-
 
       ## remove the input links and output links
       delete_gui if room_gui_loaded?

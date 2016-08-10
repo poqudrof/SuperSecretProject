@@ -16,12 +16,12 @@ module MSSP
       @bang = false
     end
 
-    def encode_with encoder
-      encoder['out_boite'] = @out_boite
-      encoder['in_boite'] = @in_boite
-      encoder['in_boite_index'] = @in_boite_index
-      encoder['bang'] = @bang
-    end
+    # def encode_with encoder
+    #   encoder['out_boite'] = @out_boite
+    #   encoder['in_boite'] = @in_boite
+    #   encoder['in_boite_index'] = @in_boite_index
+    #   encoder['bang'] = @bang
+    # end
 
 
     def draw(graphics)
@@ -45,6 +45,9 @@ module MSSP
     end
 
     def check_click(x,y)
+
+      return false if from_engine(@out_boite).deleting
+      return false if from_engine(@in_boite).deleting
 
       b = Vec2D.new(x,y)
       a = input_location

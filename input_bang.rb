@@ -1,6 +1,5 @@
 module MSSP
 
-  def from_engine boite ; $engine.boites[boite] ; end
 
   class InputBang
     include MSSP
@@ -21,23 +20,21 @@ module MSSP
     def source ; from_engine @source ; end
     def sources ; @sources.map {|s| from_engine s} ; end
 
-
-
-    def encode_with encoder
-      # encoder['boite'] = @boite
-      encoder['name'] = @name
-      encoder['index'] = @index
-      #      encoder['links'] = @links ## to regenerate (GUI)
-      encoder['sources'] = @sources
-      encoder['source'] = @source unless not is_filled?
-
-#       encoder['boite'] = @boite.id
+#     def encode_with encoder
+#       # encoder['boite'] = @boite
 #       encoder['name'] = @name
 #       encoder['index'] = @index
-#       encoder['sources'] = @sources.map {|boite| boite.id }
-#       encoder['source'] = @source.id unless not is_filled?
+#       encoder['links'] = @links ## to regenerate (GUI)
+#       encoder['sources'] = @sources
+#       encoder['source'] = @source unless not is_filled?
 
-    end
+# #       encoder['boite'] = @boite.id
+# #       encoder['name'] = @name
+# #       encoder['index'] = @index
+# #       encoder['sources'] = @sources.map {|boite| boite.id }
+# #       encoder['source'] = @source.id unless not is_filled?
+
+#     end
 
     # def init_with encoder
     #   @source =

@@ -67,7 +67,8 @@ module MSSP
 
       @boites.each_value do |boite|
 
-        puts "links " + boite.out_links.size.to_s
+        next if boite.deleting
+
         boite.out_links.each do |input_bang|
           input_bang.links.each do |link|
 
@@ -111,7 +112,6 @@ module MSSP
           @text_field = @skatolo.addTextfield("boite")
                         .setPosition(mouse_x, mouse_y)
                         .setSize(150, 20)
-          puts "add text_field"
           @skatolo.update
         end
       end

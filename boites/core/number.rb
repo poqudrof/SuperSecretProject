@@ -12,5 +12,5 @@ def set_value new_value
 end
 
 def draw g
-      g.text value.to_s, 0, 15
+      g.text @internal_data.to_s, 0, 15
 end
