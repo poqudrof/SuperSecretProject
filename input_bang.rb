@@ -9,16 +9,26 @@ module MSSP
 
     attr_reader :links
 
-
     def initialize boite, name, index
       @boite, @name, @index = boite.id, name, index
       @sources = []
       @links = []
     end
 
+    def remove_link link
+      @links.delete link
+    end
+
+    def remove_source boite
+      @sources.delete boite
+      puts @sources.to_s
+      puts "removed ?" + boite.id.to_s
+    end
+
     def boite ; from_engine @boite ; end
     def source ; from_engine @source ; end
     def sources ; @sources.map {|s| from_engine s} ; end
+    def add_source source ; @sources << source ; end
 
 #     def encode_with encoder
 #       # encoder['boite'] = @boite
@@ -41,7 +51,7 @@ module MSSP
 
     def fill_with source ; @source = source.id ; end
     def is_filled? ; @source != nil ; end
-    def unfill ; @source = nil ; end
+    def unfill ; @source = nil ; sources = []; links = []; end
 
     def controller_name ; "input_bang_" + @name ; end
     def self.controller_name(name) ; "input_bang_" + name ; end

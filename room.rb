@@ -66,9 +66,6 @@ module MSSP
       @graphics.strokeWeight 1
 
       @boites.each_value do |boite|
-
-        next if boite.deleting
-
         boite.out_links.each do |input_bang|
           input_bang.links.each do |link|
 
@@ -92,13 +89,14 @@ module MSSP
     end
 
     def mouse_pressed(args)
-      @boites.each_value do |boite|
-        boite.out_links do |link|
 
-#      @links.each do |link|
-          selected = link.check_click @applet.mouse_x, @applet.mouse_y
-          if selected
-            link.delete
+      @boites.each_value do |boite|
+        boite.out_links.each do |input_bang|
+          input_bang.links.each do |link|
+            selected = link.check_click @applet.mouse_x, @applet.mouse_y
+            if selected
+              link.delete
+            end
           end
         end
       end
@@ -131,9 +129,26 @@ module MSSP
         return
       end
 
+      if is_load name
+        puts "In load !"
+        file_name = name.split("load ")[1]
+        load_program file_name
+        remove_boite
+        return
+      end
+
+      if is_save name
+        puts "in Save !"
+        file_name = name.split("save ")[1]
+        save_program file_name
+        remove_boite
+        return
+      end
+
       boite = Boite.new boite_value, @applet, self
       add_created_boite boite
     end
+
 
     def add_created_boite boite
       boite.location.x = @text_field.position.x
@@ -144,6 +159,14 @@ module MSSP
 
     def is_a_number name
       return (name =~ /\A[-+]?\d*\.?\d+\z/) == 0
+    end
+
+    def is_load name
+      name.start_with? "load "
+    end
+
+    def is_save name
+      name.start_with? "save "
     end
 
     def remove_boite

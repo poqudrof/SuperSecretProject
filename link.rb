@@ -16,14 +16,6 @@ module MSSP
       @bang = false
     end
 
-    # def encode_with encoder
-    #   encoder['out_boite'] = @out_boite
-    #   encoder['in_boite'] = @in_boite
-    #   encoder['in_boite_index'] = @in_boite_index
-    #   encoder['bang'] = @bang
-    # end
-
-
     def draw(graphics)
       graphics.fill(245,27,27) if @bang
       input_offset = @in_boite_index * from_engine(@in_boite).input_space
@@ -63,11 +55,9 @@ module MSSP
     end
 
     def delete
-      puts " deleting link " + self.to_s
-      # @out_boite.remove_input @in_boite
-      # @in_boite.remove_output @out_boite
-      from_engine(@in_boite).remove_input self, from_engine(@out_boite)
-      from_engine(@out_boite).remove_output self, from_engine(@in_boite)
+      from_engine(@in_boite).remove_input input_bang, from_engine(@out_boite)
+      from_engine(@out_boite).remove_output from_engine(@in_boite)
+      input_bang.remove_link self
     end
 
   end

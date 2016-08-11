@@ -1,0 +1,99 @@
+---
+rf0ipogg: !ruby/object:MSSP::Boite
+  name: current_graphics
+  location: !ruby/object:Vec2D
+    x: 100.0
+    y: 100.0
+  internal_data:
+  id: rf0ipogg
+  out_links: []
+  input_bangs: {}
+w26t5bb6: !ruby/object:MSSP::Boite
+  name: rect
+  location: !ruby/object:Vec2D
+    x: 404.0
+    y: 188.0
+  internal_data:
+  id: w26t5bb6
+  out_links: []
+  input_bangs:
+    multi_input: !ruby/object:MSSP::InputBang
+      links: []
+      name: multi_input
+      boite: w26t5bb6
+      index: -1
+      controller: !ruby/object:Java::FrInriaSkatoloGuiControllers::Button {}
+      sources: []
+    graphics: !ruby/object:MSSP::InputBang
+      links: []
+      name: graphics
+      boite: w26t5bb6
+      index: 0
+      controller: !ruby/object:Java::FrInriaSkatoloGuiControllers::Button {}
+      sources: []
+    x: &1 !ruby/object:MSSP::InputBang
+      links:
+      - !ruby/object:MSSP::Link
+        in_boite_index: 1
+        in_boite: w26t5bb6
+        bang: false
+        out_boite: e6du7d0
+        input_bang: *1
+      name: x
+      boite: w26t5bb6
+      index: 1
+      source: e6du7d0
+      controller: !ruby/object:Java::FrInriaSkatoloGuiControllers::Button {}
+      sources: []
+    y: &2 !ruby/object:MSSP::InputBang
+      links:
+      - !ruby/object:MSSP::Link
+        in_boite_index: 2
+        in_boite: w26t5bb6
+        bang: false
+        out_boite: hw00o8fw
+        input_bang: *2
+      name: y
+      boite: w26t5bb6
+      index: 2
+      source: hw00o8fw
+      controller: !ruby/object:Java::FrInriaSkatoloGuiControllers::Button {}
+      sources: []
+ncnfpwzl: !ruby/object:MSSP::Boite
+  name: bang
+  location: !ruby/object:Vec2D
+    x: 188.0
+    y: 274.0
+  internal_data:
+  id: ncnfpwzl
+  out_links: []
+  input_bangs: {}
+7ggq7svd: !ruby/object:MSSP::Boite
+  name: always
+  location: !ruby/object:Vec2D
+    x: 400.0
+    y: 351.0
+  internal_data:
+  id: 7ggq7svd
+  out_links: []
+  input_bangs: {}
+e6du7d0: !ruby/object:MSSP::Boite
+  name: number
+  location: !ruby/object:Vec2D
+    x: 356.0
+    y: 103.0
+  internal_data: 200.0
+  id: e6du7d0
+  out_links:
+  - *1
+  input_bangs: {}
+hw00o8fw: !ruby/object:MSSP::Boite
+  name: number
+  location: !ruby/object:Vec2D
+    x: 524.0
+    y: 115.0
+  internal_data: 500.0
+  id: hw00o8fw
+  out_links:
+  - *2
+  input_bangs: {}

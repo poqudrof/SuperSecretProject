@@ -58,17 +58,20 @@ module MSSP
       @applet = $app if deserialize
 
       @deleting = false
-      @file, @is_custom = @room.find_file @name
+      @file, @is_custom = @room.find_file self
       @error = 0
       @data = {}
 
+      @all_links = []
+
       init_gui if room_gui_loaded?
 
-      if not deserialize
+      if not deserialize and @is_custom
         edit if not File.exists? @file
+        ## edit will load the code
+      else
+        load_code
       end
-
-      load_code
 
       create_input_bangs unless deserialize
       define_input_bangs
@@ -78,6 +81,8 @@ module MSSP
         init_optional_buttons
         update_graphics
       end
+
+      create if can_create?
     end
 
     def initialize(name, applet, room)
@@ -137,7 +142,7 @@ module MSSP
         return if @room.begin_link == nil
         return if @room.begin_link.is_a_bang?
 
-        clear_input_bang_links input_bang
+        clear_input_bang input_bang
 
         # add the input.
         add_single_input input_bang, @room.begin_link
@@ -147,9 +152,9 @@ module MSSP
       end
     end
 
-    # clear the previous link(s)
-    def clear_input_bang_links input_bang
-      input_bang.links.each { |link| link.delete }
+    def clear_input_bang input_bang
+      input_bang.unfill
+      input_bang.links.clear
     end
 
     ## Inputs are stored inside the input_bangs.
@@ -159,9 +164,9 @@ module MSSP
     end
 
     ## Inputs are stored inside the input_bangs.
-    def add_multi_input begin_link
-      @input_bangs["multi_input"].sources << begin_link.id
-      begin_link.out_links << @input_bangs["multi_input"]
+    def add_multi_input boite
+      @input_bangs["multi_input"].add_source boite.id
+      boite.out_links << @input_bangs["multi_input"]
     end
 
     def create_add_link begin_link, input_bang
@@ -169,6 +174,7 @@ module MSSP
       link.bang = begin_link.is_a_bang?
       @room.begin_link = nil
       input_bang.links << link
+      @all_links << link
     end
 
     #################
@@ -215,6 +221,10 @@ module MSSP
       ## load all the data from the multi-input
       @input_bangs["multi_input"].sources.each do |boite_src|
 
+        ## Deleted boite.
+        ## TODO: debug this, it should not be null
+        next if boite_src == nil
+
         #        next if not boite_src.has_output?
         if boite_src.has_output?
           boite_src.output.split(",").each do |value_name|
@@ -258,19 +268,26 @@ module MSSP
       true
     end
 
+    def delete_inside
+
+      puts "Delete inside"
+      @input_bangs.each_value do |input_bang|
+        clear_input_bang input_bang
+      end
+
+      ## TODO: NO OUT LINKS or
+      ## delete the output
+      @out_links.each do |input_bang|
+        remove_input input_bang, self
+      end
+
+      @all_links.clear
+    end
+
     def delete
       @deleting = true
 
-      puts "delete input_bangs"
-      @input_bangs.each_value do |input_bang|
-        clear_input_bang_links input_bang
-      end
-
-      puts "delete out_links"
-      ## delete the output
-      @out_links.each do |input_bang|
-        clear_input_bang_links input_bang
-      end
+      $engine.to_delete << self
 
       ## remove the input links and output links
       delete_gui if room_gui_loaded?
@@ -283,19 +300,26 @@ module MSSP
       end
     end
 
-    def remove_input link, boite
+    def remove_input input_bang, boite
       ## if multi-input link.
-      if link.input_bang == @input_bangs["multi_input"]
-        link.input_bang.sources.delete_if do |source|
-          source == boite
+      if input_bang == @input_bangs["multi_input"]
+        input_bang.remove_source boite
+
+        puts "size before " + input_bang.links.size
+        @all_links.each do |link|
+          input_bang.remove_link link
         end
+
+        puts "size after " + input_bang.links.size
+
+
       else
         ## simple link..
-        link.input_bang.unfill
+        input_bang.unfill
       end
     end
 
-    def remove_output link, boite
+    def remove_output boite
       @out_links.delete_if do |input_bang|
         input_bang.boite == boite
       end
@@ -353,7 +377,16 @@ module MSSP
 
       graphics.translate(0, - 5)
       graphics.fill 255
-      graphics.text @name, 0, 0
+
+      if @is_custom
+        if @display_name != nil
+          graphics.text @display_name, 0, 0
+        else
+          graphics.text @name + "**", 0, 0
+        end
+      else
+        graphics.text @name, 0, 0
+      end
 
       graphics.translate(0, 5)
       draw graphics
@@ -368,6 +401,7 @@ module MSSP
 
     ## Code related methods
     def load_code
+      puts "File not found " + @file if not File.exists? @file
       return if not File.exists? @file
 
       file = File.read @file
@@ -378,7 +412,6 @@ module MSSP
         instance_eval file
       rescue
         puts "syntax error in " + @file.to_s
-        edit nil
       end
 
       ## Remove the input and output functions, fills the in/output_list
@@ -414,9 +447,15 @@ module MSSP
 
     def create_button ; create ; end
 
+    # can be called by a button press
     def edit
+      if not @is_custom
+        @file = $engine.fork_boite self
+        @is_custom = true
+      end
+
       %x( nohup scite #{@file} & )
-      return if not File.exists? @file
+      # return if not File.exists? @file
       load_code
     end
 

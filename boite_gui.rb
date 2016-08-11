@@ -31,12 +31,6 @@ module MSSP
     end
 
     def init_optional_buttons
-      if can_create?
-        @create_button = @skatolo.addButton("create_button")
-                         .setLabel("create")
-                         .setSize(40, 10)
-        tooltip "create_button", "create data"
-      end
 
       if @input_bangs != nil
         @input_bangs.each_value do |input_bang|
