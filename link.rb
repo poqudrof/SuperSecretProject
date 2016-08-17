@@ -55,8 +55,9 @@ module MSSP
     end
 
     def delete
-      from_engine(@in_boite).remove_input input_bang, from_engine(@out_boite)
-      from_engine(@out_boite).remove_output from_engine(@in_boite)
+#      from_engine(@in_boite).remove_input input_bang, from_engine(@out_boite)
+ #     from_engine(@out_boite).remove_output from_engine(@in_boite)
+
       input_bang.remove_link self
     end
 

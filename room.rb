@@ -102,7 +102,12 @@ module MSSP
       end
 
       if mouseButton == Processing::Proxy::RIGHT
-        @begin_link = nil if @begin_link != nil
+        if @begin_link != nil
+          @begin_link = nil
+        else
+          remove_boite
+        end
+
       end
 
       if(@applet.mouseEvent != nil and @applet.mouseEvent.getClickCount == 2)

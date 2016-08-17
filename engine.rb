@@ -72,6 +72,8 @@ module MSSP
         boite.delete_inside
         remove boite
       end
+      @to_delete.clear
+
       @boites.each_value { |boite| boite.update_global }
     end
 

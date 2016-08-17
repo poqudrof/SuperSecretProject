@@ -1,7 +1,9 @@
+# coding: utf-8
 require 'ostruct'
 
 require './link'
 require './input_bang'
+require './multi_input_bang'
 require './boite_gui'
 
 ## Here to save the location
@@ -109,8 +111,8 @@ module MSSP
 
     def create_input_bangs
       if has_input?
-        multi_input = InputBang.new self, "multi_input", -1
-        @input_bangs["multi_input"] = multi_input
+        multi_input = MultiInputBang.new(self)
+        @multi_input = multi_input
 
         ## define a bang for each input.
         input_list.each_with_index do |input, index|
@@ -123,12 +125,9 @@ module MSSP
     #### Create a link.
     ## Activated by the GUI
     def input_bang_multi_input
-      puts "bang in multi_input"
       return if @room.begin_link == nil
-
       add_multi_input @room.begin_link
-
-      create_add_link(@room.begin_link, @input_bangs["multi_input"])
+      create_add_link(@room.begin_link, @multi_input)
     end
 
     ## inputs can be values, from multiple output.
@@ -136,13 +135,12 @@ module MSSP
     def define_input_bang_method(input_bang)
 
       define_singleton_method(input_bang.controller_name.to_sym) do
-        puts "here define..."
-        puts "bang in " + input_bang.name
 
         return if @room.begin_link == nil
         return if @room.begin_link.is_a_bang?
 
-        clear_input_bang input_bang
+        # clear the previous link if necessary
+        input_bang.remove_source
 
         # add the input.
         add_single_input input_bang, @room.begin_link
@@ -152,10 +150,6 @@ module MSSP
       end
     end
 
-    def clear_input_bang input_bang
-      input_bang.unfill
-      input_bang.links.clear
-    end
 
     ## Inputs are stored inside the input_bangs.
     def add_single_input input_bang, begin_link
@@ -165,8 +159,8 @@ module MSSP
 
     ## Inputs are stored inside the input_bangs.
     def add_multi_input boite
-      @input_bangs["multi_input"].add_source boite.id
-      boite.out_links << @input_bangs["multi_input"]
+      @multi_input.add_source boite.id
+      boite.out_links << @multi_input
     end
 
     def create_add_link begin_link, input_bang
@@ -219,11 +213,11 @@ module MSSP
       return if @deleting
 
       ## load all the data from the multi-input
-      @input_bangs["multi_input"].sources.each do |boite_src|
+      @multi_input.sources.each do |boite_src|
 
         ## Deleted boite.
         ## TODO: debug this, it should not be null
-        next if boite_src == nil
+#        next if boite_src == nil
 
         #        next if not boite_src.has_output?
         if boite_src.has_output?
@@ -270,15 +264,20 @@ module MSSP
 
     def delete_inside
 
-      puts "Delete inside"
-      @input_bangs.each_value do |input_bang|
-        clear_input_bang input_bang
+      if has_input?
+        ## remove this as output from all the
+        ## input_bangs
+        @multi_input.remove_all_sources
+
+        @input_bangs.each_value do |input_bang|
+          input_bang.clear
+        end
       end
 
-      ## TODO: NO OUT LINKS or
-      ## delete the output
+      ## remove this boite from the input bang
+      ## of the outputs.
       @out_links.each do |input_bang|
-        remove_input input_bang, self
+        input_bang.remove self
       end
 
       @all_links.clear
@@ -294,35 +293,30 @@ module MSSP
 
       if @room.begin_link == self
         @room.begin_link = nil
-        ## clear the data structures
-        # @out_links = nil
-        # @input_bangs = nil
       end
     end
 
-    def remove_input input_bang, boite
-      ## if multi-input link.
-      if input_bang == @input_bangs["multi_input"]
-        input_bang.remove_source boite
+    def remove_from_multi boite
+      @multi_input.remove_from_sources boite
 
-        puts "size before " + input_bang.links.size
-        @all_links.each do |link|
-          input_bang.remove_link link
-        end
-
-        puts "size after " + input_bang.links.size
-
-
-      else
-        ## simple link..
-        input_bang.unfill
+      ## remove from the links #gui
+      @all_links.each do |link|
+        @multi_input.remove_link link
       end
     end
 
-    def remove_output boite
+
+    ## remove every output, going to the given boite
+    def remove_all_output_to boite
       @out_links.delete_if do |input_bang|
         input_bang.boite == boite
       end
+    end
+
+
+    ## called by the input_bang
+    def remove_output input_bang
+      @out_links.delete input_bang
     end
 
     def get_binding ; binding ; end
@@ -340,6 +334,8 @@ module MSSP
     def check_plugged_input name ; @input_bangs[name].is_filled? ; end
     def boite_src name ; @input_bangs[name].source ; end
     def boite_src_outputs name ; @input_bangs[name].source.output ; end
+
+    def all_input_bangs ; @input_bangs.values + [@multi_input] ; end
 
     def input_list
       return [] if not has_input?

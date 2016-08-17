@@ -32,13 +32,12 @@ module MSSP
 
     def init_optional_buttons
 
-      if @input_bangs != nil
-        @input_bangs.each_value do |input_bang|
-          create_input_bang_graphics(input_bang)
+      if has_input?
+        all_input_bangs.each do |input_bang|
+              create_input_bang_graphics(input_bang)
         end
+        @skatolo.update
       end
-
-      @skatolo.update
     end
 
     def create_input_bang_graphics(input_bang)
@@ -70,7 +69,7 @@ module MSSP
     end
 
     def update_has_input
-      @input_bangs.each_value do |bang|
+      all_input_bangs.each do |bang|
         bang.controller.setPosition(@location.x + (bang.index * @input_space), @location.y )
       end
     end
