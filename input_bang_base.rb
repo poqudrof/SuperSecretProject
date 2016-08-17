@@ -3,7 +3,6 @@ module MSSP
     include MSSP
 
     attr_reader :index, :name
-    attr_accessor :controller
     attr_reader :links
 
     def initialize boite, name, index

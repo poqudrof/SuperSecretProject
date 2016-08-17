@@ -34,6 +34,7 @@ module MSSP
       encoder['id'] = @id
       encoder['out_links'] = @out_links
       encoder['input_bangs'] = @input_bangs
+      encoder['multi_input'] = @multi_input
     end
 
     def init_with coder
@@ -48,6 +49,7 @@ module MSSP
       @internal_data = coder['internal_data']
       @out_links = coder['out_links']
       @input_bangs = coder['input_bangs']
+      @multi_input = coder['multi_input']
       init true
     end
 
@@ -186,7 +188,7 @@ module MSSP
       if has_input?
         has_all = load_inputs
 
-        @error = $app.color 150, 150, 2550 if not has_all
+        @error = $app.color 150, 150, 255 if not has_all
         return if not has_all
       end
 
@@ -423,6 +425,7 @@ module MSSP
         file.gsub! parsed_name(input_name), long_name(input_name)
       end
 
+      puts "Eval code ! "
       instance_eval file
 
     end
@@ -452,7 +455,12 @@ module MSSP
 
       %x( nohup scite #{@file} & )
       # return if not File.exists? @file
+      ## delete ?
+      ## create ?
+
       load_code
+
+
     end
 
 

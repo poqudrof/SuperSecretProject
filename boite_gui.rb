@@ -10,6 +10,8 @@ module MSSP
       @skatolo = Skatolo.new @applet, self
       @skatolo.setGraphics @room.getGraphics
       @skatolo.getTooltip.setDelay(200);
+
+      @controller_map = {}
     end
 
     def init_default_buttons
@@ -46,7 +48,7 @@ module MSSP
                    .setSize(10, 10)
       ## just the bang name as a tooltip
       tooltip input_bang.controller_name, input_bang.name
-      input_bang.controller = controller
+      @controller_map[input_bang] = controller
     end
 
     def update_graphics
@@ -70,7 +72,7 @@ module MSSP
 
     def update_has_input
       all_input_bangs.each do |bang|
-        bang.controller.setPosition(@location.x + (bang.index * @input_space), @location.y )
+        @controller_map[bang].setPosition(@location.x + (bang.index * @input_space), @location.y )
       end
     end
 
