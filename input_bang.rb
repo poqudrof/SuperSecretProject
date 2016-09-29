@@ -11,12 +11,12 @@ module MSSP
       if is_filled?
         ## clear in the output
         source.remove_output self
+        @source = nil
+        clear_links
       end
-
-      ## clear here
-      remove_source
-      clear_links
     end
+
+    def remove boite ; clear; end
 
     def source
       if is_filled?
@@ -24,16 +24,6 @@ module MSSP
       else
         nil
       end
-    end
-
-    def remove boite
-      remove_source
-    end
-
-    def remove_source
-      source.remove_output self if @source != nil
-      @source = nil
-      clear_links
     end
 
   end

@@ -37,7 +37,6 @@ module MSSP
     end
 
     def check_click(x,y)
-
       return false if from_engine(@out_boite).deleting
       return false if from_engine(@in_boite).deleting
 
@@ -58,6 +57,7 @@ module MSSP
 #      from_engine(@in_boite).remove_input input_bang, from_engine(@out_boite)
  #     from_engine(@out_boite).remove_output from_engine(@in_boite)
 
+      input_bang.remove(from_engine(@out_boite))
       input_bang.remove_link self
     end
 

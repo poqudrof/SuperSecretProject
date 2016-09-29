@@ -3,9 +3,7 @@ def output
 end
 
 def create
-  if @internal_data != nil
-    value = @internal_data
-  end
+  value = @internal_data if @internal_data != nil
 end
 
 def set_value new_value
@@ -14,5 +12,5 @@ def set_value new_value
 end
 
 def draw g
-      g.text @internal_data.to_s, 0, 15
+  g.text @internal_data.to_s, 0, 15
 end

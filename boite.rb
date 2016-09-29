@@ -142,7 +142,7 @@ module MSSP
         return if @room.begin_link.is_a_bang?
 
         # clear the previous link if necessary
-        input_bang.remove_source
+        input_bang.clear
 
         # add the input.
         add_single_input input_bang, @room.begin_link
@@ -459,8 +459,6 @@ module MSSP
       ## create ?
 
       load_code
-
-
     end
 
 
