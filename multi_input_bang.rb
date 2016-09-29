@@ -1,4 +1,4 @@
-require './input_bang_base'
+require_relative 'input_bang_base'
 
 module MSSP
 

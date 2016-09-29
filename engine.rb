@@ -56,8 +56,6 @@ module MSSP
       inside_app_name = app_name name
       generated_name = generated_name name, boite.id
 
-      puts inside_app_name
-
       return [inside_app_name, true] if File.exists? inside_app_name
       return [inside_core_name, false] if File.exists? inside_core_name
       return [generated_name, true] if File.exists? generated_name

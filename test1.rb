@@ -11,11 +11,13 @@ require 'jruby/core_ext'
 
 # require 'osc-ruby'
 
-require './skatolo'
-require './room'
-require './window'
+require_relative 'skatolo'
+require_relative 'room'
+require_relative 'window'
 
-class MyApp < Processing::App
+class RoomWindow < Processing::App
+
+  attr_reader :room, :ready
 
   def create_method(name, &block)
     self.class.send(:define_method, name, &block)
@@ -29,6 +31,7 @@ class MyApp < Processing::App
   def setup
     @room = MSSP::Room.new self, 800, 800
 
+    @ready = true
   end
 
   def draw
@@ -48,4 +51,4 @@ class MyApp < Processing::App
 end
 
 
-MyApp.new  unless defined? $app
+RoomWindow.new  unless defined? $app

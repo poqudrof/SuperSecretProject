@@ -1,10 +1,10 @@
 # coding: utf-8
 require 'ostruct'
 
-require './link'
-require './input_bang'
-require './multi_input_bang'
-require './boite_gui'
+require_relative 'link'
+require_relative 'input_bang'
+require_relative 'multi_input_bang'
+require_relative 'boite_gui'
 
 ## Here to save the location
 class Vec2D

@@ -1,12 +1,13 @@
-require './engine'
-require './boite'
+require_relative 'engine'
+require_relative 'boite'
 
 module MSSP
   class Room < Engine
 
     include Processing::Proxy
-    attr_reader :graphics
+    attr_reader :graphics, :skatolo
     attr_accessor :begin_link
+    attr_accessor :text_field
 
     def create_method(name, &block)
       self.class.send(:define_method, name, &block)
@@ -14,8 +15,9 @@ module MSSP
 
     def initialize (applet, width, height)
 
-      lib = $app.sketchPath + "/boites/"
-      work = $app.sketchPath + "/test/"
+      # TODO: proper installation...
+      lib = "/home/jiii/repos/SuperSecretProject/boites/"
+      work = $app.sketchPath + "/testBoites/"
 
       super(work, lib)
       @applet, @width, @height = applet, width, height
@@ -26,21 +28,6 @@ module MSSP
 
       @skatolo = Skatolo.new @applet, self
       @applet.registerMethod("mousePressed", self)
-
-      # @boite_rect = Boite.new "rect", @applet, self
-      # @boite_graphics = Boite.new "current_graphics", @applet, self
-      # @boite_bang = Boite.new "bang", @applet, self
-      # @boite_always = Boite.new "always", @applet, self
-
-      # add @boite_graphics
-      # add @boite_rect
-      # add @boite_bang
-      # add @boite_always
-
-      # @boite_rect.location.x = 300
-      # @boite_bang.location.y = 300
-      # @boite_always.location.y = 300
-      # @boite_always.location.x = 300
 
       @to_delete = []
     end
@@ -105,7 +92,7 @@ module MSSP
         if @begin_link != nil
           @begin_link = nil
         else
-          remove_boite
+          remove_textfield
         end
 
       end
@@ -123,7 +110,7 @@ module MSSP
 
     def boite name
       if name == ""
-        remove_boite
+        remove_textfield
         return
       end
 
@@ -131,14 +118,14 @@ module MSSP
         boite = Boite.new "number", @applet, self
         boite.set_value name.to_f
         add_created_boite boite
-        return
+        return boite
       end
 
       if is_load name
         puts "In load !"
         file_name = name.split("load ")[1]
         load_program file_name
-        remove_boite
+        remove_textfield
         return
       end
 
@@ -146,12 +133,13 @@ module MSSP
         puts "in Save !"
         file_name = name.split("save ")[1]
         save_program file_name
-        remove_boite
+        remove_textfield
         return
       end
 
       boite = Boite.new boite_value, @applet, self
       add_created_boite boite
+      boite
     end
 
 
@@ -159,7 +147,7 @@ module MSSP
       boite.location.x = @text_field.position.x
       boite.location.y = @text_field.position.y
       @boites[boite.id] = boite
-      remove_boite
+      remove_textfield
     end
 
     def is_a_number name
@@ -174,7 +162,7 @@ module MSSP
       name.start_with? "save "
     end
 
-    def remove_boite
+    def remove_textfield
       @skatolo.remove "boite"
       @text_field = nil
     end
