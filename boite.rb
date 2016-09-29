@@ -184,7 +184,6 @@ module MSSP
         return
       end
 
-
       if has_input?
         has_all = load_inputs
 
@@ -195,8 +194,9 @@ module MSSP
       begin
         @error = 0
         apply
-      rescue
-        # p "error"
+      rescue => exception
+        ## p "error"
+        puts exception.inspect
         ## TODO: something better than this color stuff.
         @error = $app.color 255, 200, 0
       end
