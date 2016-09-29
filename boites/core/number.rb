@@ -2,6 +2,12 @@ def output
   "value"
 end
 
+def create
+  if @internal_data != nil
+    value = @internal_data
+  end
+end
+
 def set_value new_value
   value = new_value
   @internal_data = value
