@@ -178,15 +178,14 @@ module MSSP
     def bang
       return if @deleting
 
-      ## propagate bangs only
-      if is_a_bang?
-        bang_on_outputs
-        return
-      end
+      # ## propagate bangs only
+      # if is_a_bang?
+      #   bang_on_outputs
+      #   return
+      # end
 
       if has_input?
         has_all = load_inputs
-
         @error = $app.color 150, 150, 255 if not has_all
         return if not has_all
       end
@@ -202,7 +201,7 @@ module MSSP
       end
 
       # propagate
-      bang_on_outputs
+      # bang_on_outputs
     end
 
     def bang_on_outputs
@@ -331,7 +330,7 @@ module MSSP
     def has_input? ; defined? input ; end
     def has_output? ; defined? output ; end
     def is_a_bang? ; @bang != nil ; end
-    def is_a_bang ; @bang = true ; end
+    def is_a_bang! ; @bang = true ; end
     def room_gui_loaded? ; defined? Boite::room_gui_loaded ; end
     def check_plugged_input name ; @input_bangs[name].is_filled? ; end
     def boite_src name ; @input_bangs[name].source ; end
@@ -357,7 +356,15 @@ module MSSP
         translation_at_mouse if @location_handle.is_pressed
       end
 
-      update
+      begin
+        update
+      rescue
+        puts "Error in update in " + @name
+      end
+
+      if is_a_bang?
+        bang
+      end
     end
 
     def translation_at_mouse
@@ -394,7 +401,7 @@ module MSSP
 
     ## functions to override
     def draw graphics;  end
-    def update ; bang ; end
+    def update ; ; end
     def apply ; end
 
     ## Code related methods
