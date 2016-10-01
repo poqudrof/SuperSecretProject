@@ -17,7 +17,7 @@ def create
   @skatolo.update
 end
 
-def update
+def draw g
   if @my_slider != nil
     @my_slider.setRange(min , max)
     @my_slider.setPosition(@location.x  + 30, @location.y - 10)

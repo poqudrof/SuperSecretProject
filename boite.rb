@@ -394,8 +394,11 @@ module MSSP
       end
 
       graphics.translate(0, 5)
-      draw graphics
-
+      begin
+        draw graphics
+      rescue
+        puts "Error in drawing " + @name
+      end
       graphics.popMatrix
     end
 

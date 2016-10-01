@@ -129,8 +129,7 @@ class Skatolo < Java::FrInriaSkatolo::Skatolo
   end
 
   def is_value_class object_class
-    object_class == Java::FrInriaSkatoloGuiControllers::Slider or
-      object_class == Java::FrInriaSkatoloGuiControllers::Toggle
+   object_class == Java::FrInriaSkatoloGuiControllers::Slider
   end
 
   def is_string_value_class object_class
