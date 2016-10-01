@@ -6,13 +6,15 @@ module MSSP
 
   class PopUp < Processing::PApplet
 
+    attr_accessor :boite
+
     def initialize()
       super
       Processing::PApplet.runSketch( [self.getClass.getName], self)
     end
 
     def settings
-      size 200, 200
+      size 300, 300
     end
 
     def setup
@@ -22,6 +24,10 @@ module MSSP
     def draw
       background 40, 40, 180
       # puts "draw!"
+      if @boite != nil
+        @boite.bang_on_outputs
+      end
+
     end
 
   end

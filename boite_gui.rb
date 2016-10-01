@@ -25,7 +25,7 @@ module MSSP
                      .setLabel("edit")
                      .setSize(30, 10)
 
-      @delete_button = @skatolo.addButton("delete")
+      @delete_button = @skatolo.addButton("del")
                        .setLabel("del")
                        .setSize(13, 10)
 

@@ -284,9 +284,15 @@ module MSSP
       @all_links.clear
     end
 
-    def delete
+    def del
       @deleting = true
 
+      ## Call to the custom code
+      begin
+        delete
+      rescue
+        puts "Error while deleting " + @name.to_s
+      end
       $engine.to_delete << self
 
       ## remove the input links and output links
@@ -404,8 +410,8 @@ module MSSP
 
     ## functions to override
     def draw graphics;  end
-    def update ; ; end
     def apply ; end
+    def delete ; end
 
     ## Code related methods
     def load_code
