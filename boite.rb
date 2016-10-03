@@ -4,7 +4,7 @@ require 'ostruct'
 require_relative 'link'
 require_relative 'input_bang'
 require_relative 'multi_input_bang'
-require_relative 'boite_gui'
+
 
 ## Here to save the location
 class Vec2D
@@ -38,8 +38,6 @@ module MSSP
     end
 
     def init_with coder
-      puts "In coder !"
-
       # encoder['custom'] = @is_custom
       # encoder['location'] = @location
 
@@ -63,12 +61,16 @@ module MSSP
 
       @deleting = false
       @file, @is_custom = @room.find_file self
+      puts "File found " + @file
       @error = 0
       @data = {}
 
       @all_links = []
 
       init_gui if room_gui_loaded?
+
+      puts "Loading a boite with GUI" if room_gui_loaded?
+      puts "Loading a boite without GUI" if not room_gui_loaded?
 
       if not deserialize and @is_custom
         edit if not File.exists? @file
@@ -178,7 +180,7 @@ module MSSP
     def bang
       return if @deleting
 
-      @banged_last = $app.color 0, 255, 0
+      @banged_last = $app.color 0, 255, 0 if room_gui_loaded?
 
       # ## propagate bangs only
       # if is_a_bang?
@@ -188,7 +190,7 @@ module MSSP
 
       if has_input?
         has_all = load_inputs
-        @error = $app.color 150, 150, 255 if not has_all
+        @error = $app.color 150, 150, 255 if not has_all and room_gui_loaded?
         return if not has_all
       end
 
@@ -199,7 +201,7 @@ module MSSP
         ## p "error"
         puts exception.inspect
         ## TODO: something better than this color stuff.
-        @error = $app.color 255, 200, 0
+        @error = $app.color 255, 200, 0 if room_gui_loaded?
       end
 
       # propagate
@@ -364,11 +366,12 @@ module MSSP
         translation_at_mouse if @location_handle.is_pressed
       end
 
-      begin
-        update
-      rescue
-        puts "Error in update in " + @name
-      end
+      # begin
+      #   update
+      # rescue => exception
+      #   puts "Error in update in " + @name
+      #   puts exception.inspect
+      # end
 
       if is_a_bang?
         bang

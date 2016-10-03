@@ -24,7 +24,7 @@ module MSSP
     def draw
       background 40, 40, 180
       # puts "draw!"
-      if @boite != nil
+      if @boite != nil and $engine.is_ready?
         @boite.bang_on_outputs
       end
 

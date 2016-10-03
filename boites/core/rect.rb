@@ -5,7 +5,7 @@ end
 def create
   x = 150
   y = 100
-  graphics = @room.getGraphics
+  graphics = @room.getGraphics if room_gui_loaded?
 end
 
 def apply

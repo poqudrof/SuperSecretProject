@@ -1,6 +1,9 @@
 require_relative 'engine'
 require_relative 'boite'
 
+## GUI for boites loaded here
+require_relative 'boite_gui'
+
 module MSSP
   class Room < Engine
 

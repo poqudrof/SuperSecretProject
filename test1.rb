@@ -2,7 +2,6 @@
 
 require 'jruby_art'
 require 'jruby_art/app'
-
 require 'jruby/core_ext'
 
 # Processing::Runner

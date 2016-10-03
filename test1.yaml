@@ -1,0 +1,49 @@
+---
+vz8xxwv0: !ruby/object:MSSP::Boite
+  name: window
+  location: !ruby/object:Vec2D
+    x: 235.0
+    y: 254.0
+  internal_data:
+  id: vz8xxwv0
+  out_links:
+  - &1 !ruby/object:MSSP::MultiInputBang
+    links:
+    - !ruby/object:MSSP::Link
+      in_boite_index: -1
+      in_boite: u1pngwk6
+      bang: false
+      out_boite: vz8xxwv0
+      input_bang: *1
+    boite: u1pngwk6
+    name: multi_input
+    index: -1
+    sources:
+    - vz8xxwv0
+  input_bangs: {}
+  multi_input:
+u1pngwk6: !ruby/object:MSSP::Boite
+  name: rect
+  location: !ruby/object:Vec2D
+    x: 288.0
+    y: 351.0
+  internal_data:
+  id: u1pngwk6
+  out_links: []
+  input_bangs:
+    graphics: !ruby/object:MSSP::InputBang
+      links: []
+      boite: u1pngwk6
+      name: graphics
+      index: 0
+    x: !ruby/object:MSSP::InputBang
+      links: []
+      boite: u1pngwk6
+      name: x
+      index: 1
+    y: !ruby/object:MSSP::InputBang
+      links: []
+      boite: u1pngwk6
+      name: y
+      index: 2
+  multi_input: *1

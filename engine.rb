@@ -13,6 +13,7 @@ module MSSP
       @boites = {}
       @to_delete = []
 
+      ## HACKS, TODO: load properly
       $engine = self
       ## HACKS, TODO: load properly
       @library_directory = lib_dir
@@ -85,14 +86,21 @@ module MSSP
       end
     end
 
+    def is_ready?
+      return @is_loading_program == nil
+    end
+
     def load_program file_name
       begin
+        @is_loading_program = true
         file = File.read(file_name)
         other_boites = YAML.load(file)
         other_boites.each_value {|b| add b}
-      rescue
+      rescue => exception
         puts "Error loading: " + file_name
+        puts exception.inspect
       end
+      @is_loading_program = nil
     end
 
     def save_program file_name
