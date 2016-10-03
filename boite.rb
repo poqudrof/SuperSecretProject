@@ -178,6 +178,8 @@ module MSSP
     def bang
       return if @deleting
 
+      @banged_last = $app.color 0, 255, 0
+
       # ## propagate bangs only
       # if is_a_bang?
       #   bang_on_outputs
@@ -385,6 +387,13 @@ module MSSP
       graphics.noStroke
       graphics.fill @error
       graphics.rect(0, 0, 50, 20)
+
+      if @banged_last != nil
+        graphics.fill @banged_last
+        @banged_last = 0
+      end
+
+      graphics.rect(-10, 0, 10, 20)
 
       graphics.translate(0, - 5)
       graphics.fill 255
