@@ -18,7 +18,7 @@ module MSSP
     end
 
     def setup
-      puts "Setup !"
+      surface.setResizable true
     end
 
     def draw

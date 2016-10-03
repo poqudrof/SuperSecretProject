@@ -5,7 +5,6 @@ require_relative 'link'
 require_relative 'input_bang'
 require_relative 'multi_input_bang'
 
-
 ## Here to save the location
 class Vec2D
   def encode_with encoder

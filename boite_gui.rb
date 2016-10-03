@@ -54,10 +54,23 @@ module MSSP
     def update_graphics
       update_common
 
+      update_tooltips
       update_create if can_create? and @create_button != nil
       update_has_input if has_input? and @input_bangs != nil
       update_with_data if has_data?
 #      update_bang if is_a_bang?
+    end
+
+    def update_tooltips
+
+      all_input_bangs.values.each do |input_bang|
+        # text = input_bang.name +
+        data = @data[input_bang.name]
+        if data != nil
+          text = input_bang.name + " (" + data.to_s + ")"
+          tooltip input_bang.controller_name, text
+        end
+      end
     end
 
     def update_common
