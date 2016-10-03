@@ -378,7 +378,8 @@ module MSSP
     end
 
     def translation_at_mouse
-      @location.x, @location.y = @applet.mouseX - 50, @applet.mouseY
+      @location.x += @applet.mouseX - @applet.pmouseX
+      @location.y += @applet.mouseY - @applet.pmouseY
     end
 
     ## Draw common elements to all boites.

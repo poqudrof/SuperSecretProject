@@ -63,7 +63,7 @@ module MSSP
 
     def update_tooltips
 
-      all_input_bangs.values.each do |input_bang|
+      @input_bangs.values.each do |input_bang|
         # text = input_bang.name +
         data = @data[input_bang.name]
         if data != nil
