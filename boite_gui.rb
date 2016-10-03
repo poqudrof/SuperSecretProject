@@ -56,7 +56,7 @@ module MSSP
 
       update_tooltips
       update_create if can_create? and @create_button != nil
-      update_has_input if has_input? and @input_bangs != nil
+      update_input_locations if has_input? and @input_bangs != nil
       update_with_data if has_data?
 #      update_bang if is_a_bang?
     end
@@ -83,7 +83,7 @@ module MSSP
       @create_button.setPosition(@location.x + 60, @location.y )
     end
 
-    def update_has_input
+    def update_input_locations
       all_input_bangs.each do |bang|
         @controller_map[bang].setPosition(@location.x + (bang.index * @input_space), @location.y )
       end

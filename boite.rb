@@ -113,6 +113,10 @@ module MSSP
     end
 
     def create_input_bangs
+
+      multi_input = MultiInputBang.new(self)
+      @multi_input = multi_input
+
       if has_input?
         multi_input = MultiInputBang.new(self)
         @multi_input = multi_input
