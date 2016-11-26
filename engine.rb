@@ -32,7 +32,7 @@ module MSSP
         puts "ERROR - CORE file not found: " + boite.name
         return
       end
-
+      FileUtils::mkdir_p generated_dir unless Dir.exist? generated_dir
       FileUtils.copy inside_core_name, generated_name
 
       return generated_name
@@ -47,9 +47,13 @@ module MSSP
     end
 
     def generated_name name, id
-      @working_directory + "generated_boites/" + name + "--"+ id.to_s + ".rb"
+      generated_dir + name + "--"+ id.to_s + ".rb"
     end
 
+    def generated_dir 
+      @working_directory + "generated_boites/"
+    end
+    
     def find_file boite
       name = boite.name
 

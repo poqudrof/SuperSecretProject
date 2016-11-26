@@ -141,7 +141,8 @@ module MSSP
       end
 
       boite = Boite.new boite_value, @applet, self
-      add_created_boite boite
+      ## check if it managed to be created... 
+      add_created_boite boite unless boite.deleting
       boite
     end
 

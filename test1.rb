@@ -10,7 +10,8 @@ require 'jruby/core_ext'
 
 # require 'osc-ruby'
 
-require_relative 'skatolo'
+require 'skatolo'
+
 require_relative 'room'
 require_relative 'window'
 
