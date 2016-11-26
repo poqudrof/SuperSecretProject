@@ -70,6 +70,26 @@ module MSSP
       [inside_app_name, true]
     end
 
+    def find_user_boite_names
+      find_boite_names(@working_directory)
+    end
+    
+    def find_core_boite_names
+      find_boite_names(@library_directory + "core/")
+    end
+    
+    def find_boite_names dir_name
+      std_boites = Dir.entries(dir_name)
+      std_boites = std_boites.map do  |b|
+        if b.end_with? ".rb" 
+          b.chomp(".rb")
+        else  nil 
+        end
+      end
+      std_boites.compact
+      ## Names from other after...
+    end
+    
     def run
       @to_delete.each do |boite|
         boite.delete_inside

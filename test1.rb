@@ -30,7 +30,7 @@ class RoomWindow < Processing::App
 
   def setup
     @room = MSSP::Room.new self, 800, 800
-
+    $room = @room
     @ready = true
   end
 
@@ -41,6 +41,7 @@ class RoomWindow < Processing::App
   end
 
   def key_pressed(*keys)
+    @room.key_pressed(keys)
     # @room.test
   end
 
@@ -49,6 +50,7 @@ class RoomWindow < Processing::App
   end
 
 end
+
 
 
 RoomWindow.new  unless defined? $app

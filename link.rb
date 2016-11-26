@@ -37,6 +37,14 @@ module MSSP
     end
 
     def check_click(x,y)
+
+      if @out_boite == nil or @in_boite == nil or 
+         from_engine(@out_boite) == nil or from_engine(@in_boite) == nil
+
+        puts "Problem to fix" + @out_boite.to_s + " " + @in_boite.to_s
+        return false
+      end
+      
       return false if from_engine(@out_boite).deleting
       return false if from_engine(@in_boite).deleting
 

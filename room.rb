@@ -44,7 +44,8 @@ module MSSP
       end
 
       draw_links
-
+      draw_help_boites
+      
       run
 
       @graphics.endDraw
@@ -111,6 +112,51 @@ module MSSP
     end
 
 
+    ## 
+    def key_pressed(*keys)
+      @new_key_pressed if @text_field != nil 
+    end
+
+    def draw_help_boites
+
+      if @text_field != nil
+        partial_name = @text_field.text 
+        names = find_core_boite_names
+        user_boite_names = find_user_boite_names
+
+        start_names = names.find_all { |n| n.start_with? partial_name }
+        inside_names = names.find_all { |n| n.include? partial_name }
+        core_names = (start_names + inside_names).uniq
+
+        @graphics.noStroke
+        @graphics.fill 255
+        @graphics.pushMatrix
+        @graphics.translate @text_field.position.x,
+                            @text_field.position.y + 27
+        @graphics.pushMatrix
+        incr = 15
+
+        core_names.each do |name|
+          @graphics.text(name, 0, 20)
+          @graphics.translate 0, incr
+        end
+        
+        @graphics.popMatrix
+        @graphics.pushMatrix
+        @graphics.translate 0, -60
+        user_boite_names.each do |name|
+          
+          @graphics.text(name, 0, 20)
+          @graphics.translate 0, -incr
+
+        end
+        @graphics.popMatrix
+        @graphics.popMatrix
+        
+      end
+    end
+      
+    
     def boite name
       if name == ""
         remove_textfield
