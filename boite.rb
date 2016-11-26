@@ -72,8 +72,19 @@ module MSSP
       puts "Loading a boite without GUI" if not room_gui_loaded?
 
       if not deserialize and @is_custom
+        puts "Edit at the initalization" if not File.exists? @file
+        
         edit if not File.exists? @file
         ## edit will load the code
+
+      ## if the file still does not exist after the edit...
+      ## there is a problem, this boite will die soon.
+
+        if not File.exists? @file
+          @deleting = true
+          return
+        end
+
       else
         load_code
       end
