@@ -12,5 +12,10 @@ def create
 end
 
 def apply
-  x = Math.sin $app.millis / 1000.0
+  # nothing to see here.
+  # x = Math.sin $app.millis / 1000.0
+end
+
+def x
+  Math.sin $app.millis / 1000.0
 end

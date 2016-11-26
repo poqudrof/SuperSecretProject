@@ -57,7 +57,9 @@ module MSSP
       update_tooltips
       update_create if can_create? and @create_button != nil
       update_input_locations if has_input? and @input_bangs != nil
-      update_with_data if has_data?
+
+      ##TODO: IN PROGRESS must handle the output_bang in anther way...
+      update_with_data if has_output? # has_data?
 #      update_bang if is_a_bang?
     end
 

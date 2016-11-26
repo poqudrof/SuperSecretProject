@@ -235,81 +235,58 @@ module MSSP
 
       ## load all the data from the multi-input
       @multi_input.sources.each do |boite_source|
-
         ## Deleted boite.
         ## TODO: debug this, it should not be null
 #        next if boite_source == nil
-#        puts "incoming boite: " + boite_source.name if boite_source.has_output?
         
         #        next if not boite_source.has_output?
         if boite_source.has_output?
-
+          
+          ## each output gets added, whaaaat?
           boite_source.output.split(",").each do |value_name|
-            # Data flowed up? :s for bad reasons !!!
-
-            # @data[value_name] = boite_source.data[value_name]
-
-            ## call the method
-#  @data[value_name] = boite_source.send value_name
-
-            ## set the value ?:
-            # self.send(value_name + "=", boite_source.send(value_name))
-
+            
             ## set the value by changing redefining the method...
             define_singleton_method(value_name.to_sym) { boite_source.send(value_name) }
-            
-          end
-        else
-          ## no declared output, get the hidden data...
-          if boite_source.data != nil && boite_source.data.class == Hash
-
-            # Merge does not replace the data. 
-#            puts @name+ " incoming data multi " + boite_source.data.to_s
-            ## TODO: call the methods -> to fill what ?
-
-##            @data.merge! boite_source.data
           end
         end
       end
-
+      
       ## load the data from the individual inputs
       input_list().each do |input_name|
         # create the variable
-
+        
         ## best case, the input is plugged in a slot.
         if check_plugged_input input_name
-
+          
           ## all the data going in this input.
           ## incoming_data = boite_src(input_name).data
           boite_source = boite_src(input_name)
+
+          ## Need to handle again the output with the wrong names...
+
           
           ## if there is a corresponding data.
 #          if incoming_data[input_name] != nil
           if boite_source.respond_to? input_name
-
-#            @data[input_name] = incoming_data[input_name]
-#            self.send(input_name+"=", boite_src.send(input_name))
+            
+            #            @data[input_name] = incoming_data[input_name]
+            #            self.send(input_name+"=", boite_src.send(input_name))
             define_singleton_method(input_name.to_sym) { boite_source.send(input_name) }
-
-            else
+            
+          else
             ## get the first value
             first_output_name = boite_src_outputs(input_name).split(",").first
-#            @data[input_name] = incoming_data[first_output_name]
-#            self.send(input_name+"=", boite_source.send(first_output_name))
-#            define_singleton_method(input_name.to_sym, boite_source.send(first_output_name))
-
-#            puts "value? " + boite_source.send(first_output_name).to_s
+            #            @data[input_name] = incoming_data[first_output_name]
+            #            self.send(input_name+"=", boite_source.send(first_output_name))
+            #            define_singleton_method(input_name.to_sym, boite_source.send(first_output_name))
+            
+            #            puts "value? " + boite_source.send(first_output_name).to_s
             define_singleton_method(input_name.to_sym) do
               boite_source.send(first_output_name)
             end
           end
         else
-          # the value is not plugged, look into the multi-input
-
-          # puts "missing? " + input_name + " :" + self.send(input_name).to_s
-#          self.send(input_name)
-
-          ## No method -> very bad 
+          # the value is not plugged in slot, we check if we alread have it. 
           return false if not self.respond_to? input_name
         end
       end
@@ -384,6 +361,7 @@ module MSSP
 
 
     def can_create? ; defined? create ; end
+    ## TODO: to be deprecated
     def has_data? ;  defined? @data ; end
     def has_action? ;  defined? apply ; end
     def is_new? ; File.exists? @file ; end
@@ -517,13 +495,17 @@ module MSSP
     def define_accessors(names)
       names.split(",").each do |acc_name|
         puts "adding " + acc_name + " as accessor"
-        
-        define_singleton_method((acc_name+"=").to_sym) { |value|
-          self.instance_variable_set("@"+acc_name, value)
-        }
-        define_singleton_method(acc_name.to_sym) {
-          self.instance_variable_get("@"+acc_name)
-        }
+
+        if not self.respond_to? (acc_name+"=").to_sym 
+          define_singleton_method((acc_name+"=").to_sym) { |value|
+            self.instance_variable_set("@"+acc_name, value)
+          }
+        end
+        if not self.respond_to? (acc_name).to_sym 
+          define_singleton_method(acc_name.to_sym) {
+            self.instance_variable_get("@"+acc_name)
+          }
+        end
         # singleton_class.class_eval("attr_accessor :" + acc_name)
         
       end
