@@ -244,11 +244,9 @@ module MSSP
         #        next if not boite_source.has_output?
         if boite_source.has_output?
 
-          puts "incoming data " + boite_source.name.to_s
           boite_source.output.split(",").each do |value_name|
             # Data flowed up? :s for bad reasons !!!
 
-            puts "adding... : " + value_name.to_s + " : " + (boite_source.send value_name).to_s
             # @data[value_name] = boite_source.data[value_name]
 
             ## call the method
@@ -258,12 +256,7 @@ module MSSP
             # self.send(value_name + "=", boite_source.send(value_name))
 
             ## set the value by changing redefining the method...
-            puts "redefine1 " + value_name
             define_singleton_method(value_name.to_sym) { boite_source.send(value_name) }
-                                                                            
-            ## keep a link instead of a value ?!
-            ## Redefine the  value_name method ?!
-            
             
           end
         else
