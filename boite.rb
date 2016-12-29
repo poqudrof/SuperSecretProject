@@ -154,7 +154,7 @@ module MSSP
       define_singleton_method(input_bang.controller_name.to_sym) do
 
         return if @room.begin_link == nil
-        return if @room.begin_link.is_a_bang?
+#        return if @room.begin_link.is_a_bang?
 
         # clear the previous link if necessary
         input_bang.clear
@@ -217,6 +217,9 @@ module MSSP
       begin
         @error = 0
         apply
+
+        # propagate
+        bang_on_outputs if is_a_bang?
       rescue => exception
         p "error"
         puts exception.backtrace
@@ -225,14 +228,17 @@ module MSSP
         @error = $app.color 255, 200, 0 if room_gui_loaded?
       end
 
-      # propagate
-      # bang_on_outputs
+
     end
 
     def bang_on_outputs
       boites = @out_links.collect {|input_bang| input_bang.boite }
       boites.uniq.each { |boite| boite.bang }
     end
+
+    # def check_inputs
+    #   ## check if the inputs do not call deleted boites...
+    # end
 
     def load_inputs
       return if @deleting

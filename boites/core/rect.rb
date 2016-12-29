@@ -2,7 +2,7 @@ def input
   "graphics,x,y"
 end
 
-is_a_bang!
+# is_a_bang!
 
 def create
   x = 150

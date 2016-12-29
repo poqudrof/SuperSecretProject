@@ -12,5 +12,10 @@ def apply
 end
 
 def x
-  Math.sin $app.millis / 1000.0
+  if defined? $app
+    Math.sin $app.millis / 1000.0
+  else
+    Math.sin @k / 1000.0
+    @k = k+1
+  end
 end

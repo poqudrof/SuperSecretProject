@@ -8,13 +8,14 @@ module MSSP
 
     attr_accessor :boite
 
-    def initialize()
+    def initialize
       super
       Processing::PApplet.runSketch( [self.getClass.getName], self)
     end
 
     def settings
       size 300, 300
+      $app = self if !defined? $app
     end
 
     def setup

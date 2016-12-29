@@ -1,10 +1,9 @@
 is_a_bang!
 
 def create
-
   @my_toggle = @skatolo.addToggle("toggle")
                  .setLabel("")
-                 .setSize(80, 10)
+                 .setSize(20, 20)
   @my_toggle.setValue @internal_data if @internal_data != nil
 
   @skatolo.update

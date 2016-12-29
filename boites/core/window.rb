@@ -8,9 +8,11 @@ def create
   @popup.boite = self
 end
 
-def apply
-  bang_on_outputs
-end
+is_a_bang!
+
+# def apply
+#   bang_on_outputs
+# end
 
 def delete
   @popup.getSurface.setVisible false

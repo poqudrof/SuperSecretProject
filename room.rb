@@ -69,6 +69,22 @@ module MSSP
             bold = link.check_click @applet.mouse_x, @applet.mouse_y
             @graphics.strokeWeight 2 if bold
             link.draw @graphics
+
+            @graphics.push_style
+            ## display the data that transits...
+            if bold
+              @graphics.fill 200
+              @graphics.text input_bang.name, @applet.mouse_x + 20, @applet.mouse_y
+              b = input_bang.boite
+              begin
+                @graphics.text((b.send(input_bang.name.to_sym).to_s),
+                               @applet.mouse_x + 20,
+                               @applet.mouse_y + 15)
+              rescue => exception
+                puts exception.inspect
+              end
+            end
+            @graphics.pop_style
           end
         end
       end

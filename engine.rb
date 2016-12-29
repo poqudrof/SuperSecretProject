@@ -120,6 +120,7 @@ module MSSP
         file = File.read(file_name)
         other_boites = YAML.load(file)
         other_boites.each_value {|b| add b}
+        boites.each_value {|b| b.load_inputs }
       rescue => exception
         puts "Error loading: " + file_name
         puts exception.inspect

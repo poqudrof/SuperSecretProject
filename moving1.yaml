@@ -1,0 +1,184 @@
+---
+facittq0: !ruby/object:MSSP::Boite
+  name: rect
+  location: !ruby/object:Vec2D
+    x: 345.0
+    y: 370.0
+  internal_data:
+  id: facittq0
+  out_links: []
+  input_bangs:
+    graphics: &1 !ruby/object:MSSP::InputBang
+      links:
+      - !ruby/object:MSSP::Link
+        in_boite_index: 0
+        in_boite: facittq0
+        bang: true
+        out_boite: pf5gai2s
+        input_bang: *1
+      boite: facittq0
+      name: graphics
+      index: 0
+      source: pf5gai2s
+    x: &2 !ruby/object:MSSP::InputBang
+      links:
+      - !ruby/object:MSSP::Link
+        in_boite_index: 1
+        in_boite: facittq0
+        bang: false
+        out_boite: bhkf7ro5
+        input_bang: *2
+      boite: facittq0
+      name: x
+      index: 1
+      source: bhkf7ro5
+    y: &3 !ruby/object:MSSP::InputBang
+      links:
+      - !ruby/object:MSSP::Link
+        in_boite_index: 2
+        in_boite: facittq0
+        bang: false
+        out_boite: jz7z11ld
+        input_bang: *3
+      boite: facittq0
+      name: y
+      index: 2
+      source: jz7z11ld
+  multi_input: !ruby/object:MSSP::MultiInputBang
+    links: []
+    boite: facittq0
+    name: multi_input
+    index: -1
+    sources: []
+pf5gai2s: !ruby/object:MSSP::Boite
+  name: current-graphics
+  location: !ruby/object:Vec2D
+    x: 404.0
+    y: 102.0
+  internal_data:
+  id: pf5gai2s
+  out_links:
+  - *1
+  input_bangs: {}
+  multi_input: !ruby/object:MSSP::MultiInputBang
+    links: []
+    boite: pf5gai2s
+    name: multi_input
+    index: -1
+    sources: []
+bhkf7ro5: !ruby/object:MSSP::Boite
+  name: number
+  location: !ruby/object:Vec2D
+    x: 498.0
+    y: 208.0
+  internal_data: 56.0
+  id: bhkf7ro5
+  out_links:
+  - *2
+  input_bangs: {}
+  multi_input: !ruby/object:MSSP::MultiInputBang
+    links: []
+    boite: bhkf7ro5
+    name: multi_input
+    index: -1
+    sources: []
+jz7z11ld: !ruby/object:MSSP::Boite
+  name: plus
+  location: !ruby/object:Vec2D
+    x: 510.0
+    y: 465.0
+  internal_data:
+  id: jz7z11ld
+  out_links:
+  - *3
+  input_bangs:
+    a: &4 !ruby/object:MSSP::InputBang
+      links:
+      - !ruby/object:MSSP::Link
+        in_boite_index: 0
+        in_boite: jz7z11ld
+        bang: false
+        out_boite: jhwy9y6z
+        input_bang: *4
+      boite: jz7z11ld
+      name: a
+      index: 0
+      source: jhwy9y6z
+    b: &5 !ruby/object:MSSP::InputBang
+      links:
+      - !ruby/object:MSSP::Link
+        in_boite_index: 1
+        in_boite: jz7z11ld
+        bang: false
+        out_boite: e04dgd06
+        input_bang: *5
+      boite: jz7z11ld
+      name: b
+      index: 1
+      source: e04dgd06
+  multi_input: !ruby/object:MSSP::MultiInputBang
+    links: []
+    boite: jz7z11ld
+    name: multi_input
+    index: -1
+    sources: []
+jhwy9y6z: !ruby/object:MSSP::Boite
+  name: number
+  location: !ruby/object:Vec2D
+    x: 612.0
+    y: 299.0
+  internal_data: 100.0
+  id: jhwy9y6z
+  out_links:
+  - *4
+  input_bangs: {}
+  multi_input: !ruby/object:MSSP::MultiInputBang
+    links: []
+    boite: jhwy9y6z
+    name: multi_input
+    index: -1
+    sources: []
+qw5p05g1: !ruby/object:MSSP::Boite
+  name: sin
+  location: !ruby/object:Vec2D
+    x: 618.0
+    y: 348.0
+  internal_data:
+  id: qw5p05g1
+  out_links:
+  - &6 !ruby/object:MSSP::InputBang
+    links:
+    - !ruby/object:MSSP::Link
+      in_boite_index: 0
+      in_boite: e04dgd06
+      bang: false
+      out_boite: qw5p05g1
+      input_bang: *6
+    boite: e04dgd06
+    name: in_value
+    index: 0
+    source: qw5p05g1
+  input_bangs: {}
+  multi_input: !ruby/object:MSSP::MultiInputBang
+    links: []
+    boite: qw5p05g1
+    name: multi_input
+    index: -1
+    sources: []
+e04dgd06: !ruby/object:MSSP::Boite
+  name: mult
+  location: !ruby/object:Vec2D
+    x: 612.0
+    y: 412.0
+  internal_data:
+  id: e04dgd06
+  out_links:
+  - *5
+  input_bangs:
+    in_value: *6
+  multi_input: !ruby/object:MSSP::MultiInputBang
+    links: []
+    boite: e04dgd06
+    name: multi_input
+    index: -1
+    sources: []
