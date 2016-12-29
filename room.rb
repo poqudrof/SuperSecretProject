@@ -45,10 +45,15 @@ module MSSP
 
       draw_links
       draw_help_boites
-      
+
       run
 
       @graphics.endDraw
+    end
+
+    def begin_link= value
+      @new_begin_link = true
+      @begin_link = value
     end
 
     def draw_links
@@ -76,6 +81,34 @@ module MSSP
                        @begin_link.location.y + 20 + 5,
                        @applet.mouse_x,
                        @applet.mouse_y)
+
+        if @new_begin_link
+          ## get the outputs
+          outputs = @begin_link.output_list
+
+        ## make all possible match bolder
+          @boites.each_value do |boite|
+            ## find an input matching one of the outputs.
+
+            ## get the inputs of the others
+            inputs = boite.input_list
+            outputs.each do |output|
+              inputs.each do |input|
+                boite.highlight_input_bang input if input.eql? output
+              end
+            end
+          end
+          ##
+          @new_begin_link = false
+        end
+      end
+      if @new_begin_link
+        @boites.each_value do |boite|
+          inputs = boite.input_list
+          inputs.each do |input|
+            boite.un_highlight_input_bang input
+          end
+        end
       end
     end
 
@@ -94,7 +127,7 @@ module MSSP
 
       if mouseButton == Processing::Proxy::RIGHT
         if @begin_link != nil
-          @begin_link = nil
+          begin_link = nil
         else
           remove_textfield
         end
@@ -112,15 +145,15 @@ module MSSP
     end
 
 
-    ## 
+    ##
     def key_pressed(*keys)
-      @new_key_pressed if @text_field != nil 
+      @new_key_pressed if @text_field != nil
     end
 
     def draw_help_boites
 
       if @text_field != nil
-        partial_name = @text_field.text 
+        partial_name = @text_field.text
         names = find_core_boite_names
         user_boite_names = find_user_boite_names
 
@@ -140,23 +173,23 @@ module MSSP
           @graphics.text(name, 0, 20)
           @graphics.translate 0, incr
         end
-        
+
         @graphics.popMatrix
         @graphics.pushMatrix
         @graphics.translate 0, -60
         user_boite_names.each do |name|
-          
+
           @graphics.text(name, 0, 20)
           @graphics.translate 0, -incr
 
         end
         @graphics.popMatrix
         @graphics.popMatrix
-        
+
       end
     end
-      
-    
+
+
     def boite name
       if name == ""
         remove_textfield
@@ -187,7 +220,7 @@ module MSSP
       end
 
       boite = Boite.new boite_value, @applet, self
-      ## check if it managed to be created... 
+      ## check if it managed to be created...
       add_created_boite boite unless boite.deleting
       boite
     end

@@ -50,10 +50,10 @@ module MSSP
       generated_dir + name + "--"+ id.to_s + ".rb"
     end
 
-    def generated_dir 
+    def generated_dir
       @working_directory + "generated_boites/"
     end
-    
+
     def find_file boite
       name = boite.name
 
@@ -73,23 +73,23 @@ module MSSP
     def find_user_boite_names
       find_boite_names(@working_directory)
     end
-    
+
     def find_core_boite_names
       find_boite_names(@library_directory + "core/")
     end
-    
+
     def find_boite_names dir_name
       std_boites = Dir.entries(dir_name)
       std_boites = std_boites.map do  |b|
-        if b.end_with? ".rb" 
+        if b.end_with? ".rb"
           b.chomp(".rb")
-        else  nil 
+        else  nil
         end
       end
       std_boites.compact
       ## Names from other after...
     end
-    
+
     def run
       @to_delete.each do |boite|
         boite.delete_inside

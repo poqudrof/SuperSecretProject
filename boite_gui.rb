@@ -111,6 +111,17 @@ module MSSP
       @activation_bang.setPosition(@location.x, @location.y)
     end
 
+    def highlight_input_bang name
+      bang = @input_bangs[name]
+      @controller_map[bang].setSize(15, 15)
+    end
+
+    def un_highlight_input_bang name
+      bang = @input_bangs[name]
+      @controller_map[bang].setSize(10, 10)
+    end
+
+
     def output_bang
       @room.begin_link = self
     end

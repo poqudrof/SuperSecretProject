@@ -73,7 +73,7 @@ module MSSP
 
       if not deserialize and @is_custom
         puts "Edit at the initalization" if not File.exists? @file
-        
+
         edit if not File.exists? @file
         ## edit will load the code
 
@@ -87,7 +87,7 @@ module MSSP
       end
 
       load_code
-      
+
       create_input_bangs unless deserialize
       define_input_bangs
 
@@ -164,6 +164,10 @@ module MSSP
 
         # create and add the link
         create_add_link(@room.begin_link, input_bang)
+
+        ## TODO: update the use of load_inputs
+        load_inputs
+
       end
     end
 
@@ -202,11 +206,12 @@ module MSSP
       # end
 
 #      puts "In the bang !"
-      if has_input?
-        has_all = load_inputs
-        @error = $app.color 150, 150, 255 if not has_all and room_gui_loaded?
-        return if not has_all
-      end
+      ## TODO: update the  way the inputs are retreived
+      # if has_input?
+      #   has_all = load_inputs
+      #   @error = $app.color 150, 150, 255 if not has_all and room_gui_loaded?
+      #   return if not has_all
+      # end
 
 #      puts "ready to execute the code !"
       begin
@@ -229,7 +234,6 @@ module MSSP
       boites.uniq.each { |boite| boite.bang }
     end
 
-
     def load_inputs
       return if @deleting
 
@@ -238,55 +242,54 @@ module MSSP
         ## Deleted boite.
         ## TODO: debug this, it should not be null
 #        next if boite_source == nil
-        
         #        next if not boite_source.has_output?
         if boite_source.has_output?
-          
+
           ## each output gets added, whaaaat?
           boite_source.output.split(",").each do |value_name|
-            
             ## set the value by changing redefining the method...
             define_singleton_method(value_name.to_sym) { boite_source.send(value_name) }
           end
         end
       end
-      
+
       ## load the data from the individual inputs
       input_list().each do |input_name|
         # create the variable
-        
+
         ## best case, the input is plugged in a slot.
         if check_plugged_input input_name
-          
+
           ## all the data going in this input.
           ## incoming_data = boite_src(input_name).data
           boite_source = boite_src(input_name)
 
-          ## Need to handle again the output with the wrong names...
+          ## TODO: /!\ Need to handle again the output with the wrong names...
 
-          
           ## if there is a corresponding data.
-#          if incoming_data[input_name] != nil
           if boite_source.respond_to? input_name
-            
+
             #            @data[input_name] = incoming_data[input_name]
             #            self.send(input_name+"=", boite_src.send(input_name))
             define_singleton_method(input_name.to_sym) { boite_source.send(input_name) }
-            
+
           else
-            ## get the first value
+
+            ## TODO: /!\ Need to handle again the output with the wrong names...
+
+            ## get the first output value  ?!
             first_output_name = boite_src_outputs(input_name).split(",").first
             #            @data[input_name] = incoming_data[first_output_name]
             #            self.send(input_name+"=", boite_source.send(first_output_name))
             #            define_singleton_method(input_name.to_sym, boite_source.send(first_output_name))
-            
-            #            puts "value? " + boite_source.send(first_output_name).to_s
+
+            puts "plugging output " + first_output_name + " to input " + input_name
             define_singleton_method(input_name.to_sym) do
               boite_source.send(first_output_name)
             end
           end
         else
-          # the value is not plugged in slot, we check if we alread have it. 
+          # the value is not plugged in slot, we check if we alread have it.
           return false if not self.respond_to? input_name
         end
       end
@@ -470,9 +473,9 @@ module MSSP
 
 
       ## To do also with output ?
-      define_accessors input if defined? input 
+      define_accessors input if defined? input
       define_accessors output if defined? output
-      
+
       ## Remove the input and output functions, fills the in/output_list
       remove_input_output file
 
@@ -487,7 +490,7 @@ module MSSP
       end
 
       ## With the accessors the code has a different meaning...
-      puts "Eval code ! " + file
+      #  puts "Eval code ! " + file
       instance_eval file
 
     end
@@ -496,18 +499,18 @@ module MSSP
       names.split(",").each do |acc_name|
         puts "adding " + acc_name + " as accessor"
 
-        if not self.respond_to? (acc_name+"=").to_sym 
+        if not self.respond_to? (acc_name+"=").to_sym
           define_singleton_method((acc_name+"=").to_sym) { |value|
             self.instance_variable_set("@"+acc_name, value)
           }
         end
-        if not self.respond_to? (acc_name).to_sym 
+        if not self.respond_to? (acc_name).to_sym
           define_singleton_method(acc_name.to_sym) {
             self.instance_variable_get("@"+acc_name)
           }
         end
         # singleton_class.class_eval("attr_accessor :" + acc_name)
-        
+
       end
     end
 

@@ -1,11 +1,15 @@
-def input 
-	"value"
+def input
+  "in_value"
 end
 
 def output
-	"value"
+  "out_value"
 end
 
-def apply
-	value = value * 100
+def create
+  in_value = 1
+end
+
+def out_value
+  in_value * 100
 end
